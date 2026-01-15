@@ -1,0 +1,45 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+/* HUD */
+#hud {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  font-family: Arial, sans-serif;
+  user-select: none;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.key {
+  width: 48px;
+  height: 48px;
+  margin: 4px;
+  border-radius: 6px;
+  background: #333;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #777;
+  transition: all 0.1s ease;
+}
+
+.key.wide {
+  width: 120px;
+}
+
+.key.active {
+  background: #00ff88;
+  color: #000;
+  border-color: #00cc66;
+  transform: scale(1.1);
+}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Mobile</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        body {
+  margin: 0;
+  overflow: hidden;
+}
+
+/* HUD */
+#hud {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  font-family: Arial, sans-serif;
+  user-select: none;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.key {
+  width: 48px;
+  height: 48px;
+  margin: 4px;
+  border-radius: 6px;
+  background: #333;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #777;
+  transition: all 0.1s ease;
+}
+
+.key.wide {
+  width: 120px;
+}
+
+.key.active {
+  background: #00ff88;
+  color: #000;
+  border-color: #00cc66;
+  transform: scale(1.1);
+}
+
+    </style>
+</head>
+<body>
+ <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+</script>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="row">
+      <div class="key" id="key-w">W</div>
+    </div>
+    <div class="row">
+      <div class="key" id="key-a">A</div>
+      <div class="key" id="key-s">S</div>
+      <div class="key" id="key-d">D</div>
+    </div>
+    <div class="row">
+      <div class="key wide" id="key-shift">SHIFT</div>
+    </div>
+  </div>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
