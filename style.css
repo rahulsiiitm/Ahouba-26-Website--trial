@@ -1,45 +1,87 @@
-body {
-  margin: 0;
-  overflow: hidden;
-}
+/* ===== FULLSCREEN THREE.JS CANVAS ===== */
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      display: block;
+    }
 
-/* HUD */
-#hud {
-  position: fixed;
-  bottom: 30px;
-  left: 30px;
-  font-family: Arial, sans-serif;
-  user-select: none;
-}
+    /* ===== HUD / OVERLAYS ===== */
+    #hud {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      user-select: none;
+      z-index: 1000;
+    }
+    .row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 6px;
+    }
+    .key {
+      width: 48px;
+      height: 48px;
+      margin: 4px;
+      border-radius: 6px;
+      background: #333;
+      color: white;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #777;
+      transition: all 0.1s ease;
+    }
+    .key.wide {
+      width: 120px;
+    }
+    .key:active {
+      background: #00ff88;
+      color: #000;
+      border-color: #00cc66;
+      transform: scale(1.1);
+    }
 
-.row {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 6px;
-}
+    /* ===== MINIMAP ===== */
+    .minimap {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: 4px solid black;
+      overflow: hidden;
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: rgba(0,0,0,0.2);
+      z-index: 1000;
+      pointer-events: none;
+    }
 
-.key {
-  width: 48px;
-  height: 48px;
-  margin: 4px;
-  border-radius: 6px;
-  background: #333;
-  color: white;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #777;
-  transition: all 0.1s ease;
-}
-
-.key.wide {
-  width: 120px;
-}
-
-.key.active {
-  background: #00ff88;
-  color: #000;
-  border-color: #00cc66;
-  transform: scale(1.1);
-}
+    /* ===== NAVBAR EXAMPLE ===== */
+    #navbar {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 5px 10px;
+      border-radius: 6px;
+      z-index: 1000;
+    }
+    #navbar button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #222;
+      color: #fff;
+      font-weight: bold;
+    }
