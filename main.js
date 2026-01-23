@@ -11,12 +11,70 @@ const scene = new THREE.Scene();
    RENDERERS
 ========================= */
 const renderer = new THREE.WebGLRenderer({ antialias: true });
+/* =========================
+   GPU DETECTION & QUALITY
+========================= */
+function detectQuality(renderer) {
+  const gl = renderer.getContext();
+  const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+
+  let gpu = 'unknown';
+  if (debugInfo) {
+    gpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+  }
+
+  gpu = gpu.toLowerCase();
+  console.log("Detected GPU:", gpu);
+
+  // Heuristics
+  if (
+    gpu.includes("mali") ||
+    gpu.includes("adreno 5") ||
+    gpu.includes("adreno 6") ||
+    gpu.includes("powervr") ||
+    gpu.includes("intel") ||
+    gpu.includes("uhd") ||
+    gpu.includes("hd graphics")
+  ) {
+    return "low";
+  }
+
+  if (
+    gpu.includes("adreno 7") ||
+    gpu.includes("apple") ||
+    gpu.includes("radeon") ||
+    gpu.includes("iris")
+  ) {
+    return "medium";
+  }
+
+  if (
+    gpu.includes("nvidia") ||
+    gpu.includes("rtx") ||
+    gpu.includes("gtx") ||
+    gpu.includes("rx ")
+  ) {
+    return "high";
+  }
+
+  return "medium"; // fallback
+}
+
+const QUALITY = detectQuality(renderer);
+console.log("Quality profile:", QUALITY);
+
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(
+  QUALITY === "low" ? 1 : Math.min(window.devicePixelRatio, 2)
+);
+
 renderer.setClearColor(0x87ceeb);
-renderer.shadowMap.enabled = true;
+
+renderer.shadowMap.enabled = QUALITY !== "low";
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
 document.body.appendChild(renderer.domElement);
+
 
 const minimapContainer = document.getElementById('minimap');
 const minimapRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -42,20 +100,25 @@ scene.add(light);
 /* =========================
    CSM SHADOWS
 ========================= */
-const csm = new CSM({
-  maxFar: camera.far,
-  cascades: 4,
-  mode: 'practical',
-  parent: scene,
-  shadowMapSize: 2048,
-  lightDirection: new THREE.Vector3(-1, -1, -1),
-  camera
-});
+let csm = null;
 
-csm.lights.forEach(l => {
-  l.shadow.bias = -0.0005;
-  l.shadow.normalBias = 0.02;
-});
+if (QUALITY !== "low") {
+  csm = new CSM({
+    maxFar: camera.far,
+    cascades: QUALITY === "high" ? 4 : 2,
+    mode: 'practical',
+    parent: scene,
+    shadowMapSize: QUALITY === "high" ? 2048 : 1024,
+    lightDirection: new THREE.Vector3(-1, -1, -1),
+    camera
+  });
+
+  csm.lights.forEach(l => {
+    l.shadow.bias = -0.0005;
+    l.shadow.normalBias = 0.02;
+  });
+}
+
 
 /* =========================
    LOADER
@@ -78,7 +141,8 @@ loader.load('public/models/scene223.glb', gltf => {
     if (o.isMesh) {
       o.castShadow = false;
       o.receiveShadow = false;
-      csm.setupMaterial(o.material);
+      if(csm){
+      csm.setupMaterial(o.material);}
     }
   });
   scene.add(gltf.scene);
@@ -137,7 +201,8 @@ loader.load('public/models/finalmainmodel.glb', gltf => {
     if (o.isMesh) {
       o.castShadow = false;
       o.receiveShadow = false;
-      csm.setupMaterial(o.material);
+      if(csm){
+      csm.setupMaterial(o.material);}
     }
   });
 
@@ -367,7 +432,7 @@ function animate() {
     ms.group.rotation.y += 0.005;
   });
 
-  csm.update();
+  if(csm){csm.update();}
   renderer.render(scene, camera);
   minimapRenderer.render(scene, minimapCamera);
 }
