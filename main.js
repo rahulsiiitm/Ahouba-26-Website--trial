@@ -76,7 +76,7 @@ function measureFPS() {
 const hud = document.createElement("div");
 hud.style.position = "fixed";
 hud.style.top = "10px";
-hud.style.right = "10px";
+hud.style.left = "10px";
 hud.style.padding = "6px 10px";
 hud.style.background = "rgba(0,0,0,0.6)";
 hud.style.color = "#0f0";
@@ -173,6 +173,48 @@ const loadingManager = new THREE.LoadingManager(
 );
 
 const loader = new GLTFLoader(loadingManager);
+/* =========================
+   START SCREEN / USER READY
+========================= */
+const startInstructions = document.createElement('p');
+startInstructions.innerHTML = `
+    Use W/A/S/D to move<br>
+    Mouse to look around<br>
+    Press ENTER or tap to start
+`;
+startInstructions.style.color = 'white';
+startInstructions.style.textAlign = 'center';
+startInstructions.style.fontFamily = 'sans-serif';
+startInstructions.style.marginTop = '10px';
+loadingContainer.appendChild(startInstructions);
+
+let assetsLoaded = false;
+let userReady = false;
+
+// Event listeners for input
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    userReady = true;
+    tryStartGame();
+  }
+});
+document.addEventListener('click', () => { userReady = true; tryStartGame(); });
+document.addEventListener('touchstart', () => { userReady = true; tryStartGame(); });
+
+// Mark assets as loaded when the loading manager completes
+loadingManager.onLoad = () => {
+  assetsLoaded = true;
+  tryStartGame();
+};
+
+// Only start game if both user pressed and assets loaded
+function tryStartGame() {
+  if (assetsLoaded && userReady) {
+    loadingContainer.style.display = 'none';
+    initGame();  // your game initialization (Three.js scene is already mostly setup)
+    animate();   // start render loop
+  }
+}
 
 /* =========================
    WORLD
