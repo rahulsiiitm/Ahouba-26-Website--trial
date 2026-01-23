@@ -11,76 +11,110 @@ const scene = new THREE.Scene();
    RENDERERS
 ========================= */
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-/* =========================
-   GPU DETECTION & QUALITY
-========================= */
-function detectQuality(renderer) {
-  const gl = renderer.getContext();
-  const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-
-  let gpu = 'unknown';
-  if (debugInfo) {
-    gpu = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-  }
-
-  gpu = gpu.toLowerCase();
-  console.log("Detected GPU:", gpu);
-
-  // Heuristics
-  if (
-    gpu.includes("mali") ||
-    gpu.includes("adreno 5") ||
-    gpu.includes("adreno 6") ||
-    gpu.includes("powervr") ||
-    gpu.includes("intel") ||
-    gpu.includes("uhd") ||
-    gpu.includes("hd graphics")
-  ) {
-    return "low";
-  }
-
-  if (
-    gpu.includes("adreno 7") ||
-    gpu.includes("apple") ||
-    gpu.includes("radeon") ||
-    gpu.includes("iris")
-  ) {
-    return "medium";
-  }
-
-  if (
-    gpu.includes("nvidia") ||
-    gpu.includes("rtx") ||
-    gpu.includes("gtx") ||
-    gpu.includes("rx ")
-  ) {
-    return "high";
-  }
-
-  return "medium"; // fallback
-}
-
-const QUALITY = detectQuality(renderer);
-console.log("Quality profile:", QUALITY);
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(
-  QUALITY === "low" ? 1 : Math.min(window.devicePixelRatio, 2)
-);
-
 renderer.setClearColor(0x87ceeb);
-
-renderer.shadowMap.enabled = QUALITY !== "low";
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
 document.body.appendChild(renderer.domElement);
-
 
 const minimapContainer = document.getElementById('minimap');
 const minimapRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 minimapRenderer.setSize(minimapContainer.clientWidth, minimapContainer.clientHeight);
 minimapRenderer.setPixelRatio(window.devicePixelRatio);
 minimapContainer.appendChild(minimapRenderer.domElement);
+
+/* =========================
+   DYNAMIC QUALITY (FPS BASED)
+========================= */
+let QUALITY = "medium";
+let qualityLocked = false;
+
+function applyQualitySettings() {
+  console.log("Applying quality:", QUALITY);
+
+  if (QUALITY === "low") {
+    renderer.setPixelRatio(1);
+    renderer.shadowMap.enabled = false;
+    disableCSM();
+  }
+
+  if (QUALITY === "medium") {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.shadowMap.enabled = false;
+    disableCSM();
+  }
+
+  if (QUALITY === "high") {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    enableCSM();
+  }
+}
+
+/* =========================
+   FPS MEASUREMENT
+========================= */
+let fpsSamples = [];
+let lastTime = performance.now();
+let avgFPS = 60;
+
+function measureFPS() {
+  const now = performance.now();
+  const delta = now - lastTime;
+  lastTime = now;
+
+  const fps = 1000 / delta;
+  fpsSamples.push(fps);
+  if (fpsSamples.length > 60) fpsSamples.shift();
+
+  avgFPS = fpsSamples.reduce((a, b) => a + b, 0) / fpsSamples.length;
+}
+
+/* =========================
+   FPS DISPLAY
+========================= */
+const hud = document.createElement("div");
+hud.style.position = "fixed";
+hud.style.top = "10px";
+hud.style.right = "10px";
+hud.style.padding = "6px 10px";
+hud.style.background = "rgba(0,0,0,0.6)";
+hud.style.color = "#0f0";
+hud.style.font = "12px monospace";
+hud.style.zIndex = "9999";
+document.body.appendChild(hud);
+
+setInterval(() => {
+  hud.innerHTML = `FPS: ${avgFPS.toFixed(1)}<br>Quality: ${QUALITY}`;
+}, 500);
+
+/* =========================
+   AUTO QUALITY CONTROLLER
+========================= */
+setInterval(() => {
+  if (qualityLocked) return;
+
+  console.log("Avg FPS:", avgFPS.toFixed(1), "Quality:", QUALITY);
+
+  if (avgFPS < 28) {
+    if (QUALITY === "high") QUALITY = "medium";
+    else if (QUALITY === "medium") QUALITY = "low";
+    applyQualitySettings();
+    return;
+  }
+
+  if (avgFPS > 55) {
+    if (QUALITY === "low") QUALITY = "medium";
+    else if (QUALITY === "medium") QUALITY = "high";
+    applyQualitySettings();
+    return;
+  }
+
+  if (avgFPS > 45 && avgFPS < 55) {
+    qualityLocked = true;
+    console.log("Quality locked at:", QUALITY);
+  }
+}, 3000);
 
 /* =========================
    CAMERAS
@@ -102,13 +136,15 @@ scene.add(light);
 ========================= */
 let csm = null;
 
-if (QUALITY !== "low") {
+function enableCSM() {
+  if (csm || QUALITY !== "high") return;
+
   csm = new CSM({
     maxFar: camera.far,
-    cascades: QUALITY === "high" ? 4 : 2,
+    cascades: 4,
     mode: 'practical',
     parent: scene,
-    shadowMapSize: QUALITY === "high" ? 2048 : 1024,
+    shadowMapSize: 2048,
     lightDirection: new THREE.Vector3(-1, -1, -1),
     camera
   });
@@ -119,6 +155,11 @@ if (QUALITY !== "low") {
   });
 }
 
+function disableCSM() {
+  if (!csm) return;
+  csm.dispose?.();
+  csm = null;
+}
 
 /* =========================
    LOADER
@@ -141,8 +182,7 @@ loader.load('public/models/scene223.glb', gltf => {
     if (o.isMesh) {
       o.castShadow = false;
       o.receiveShadow = false;
-      if(csm){
-      csm.setupMaterial(o.material);}
+      if (csm) csm.setupMaterial(o.material);
     }
   });
   scene.add(gltf.scene);
@@ -150,14 +190,12 @@ loader.load('public/models/scene223.glb', gltf => {
 
 loader.load('public/models/death_note.glb', gltf => {
   const base = gltf.scene;
-  base.position.set(5,-35,0);
-  base.scale.set(1.5,1.5,1.5);
-  base.rotation.y = Math.PI/4 + Math.PI/2;
-
- // base.rotation.x = Math.PI/2;
+  base.position.set(5, -35, 0);
+  base.scale.set(1.5, 1.5, 1.5);
+  base.rotation.y = Math.PI / 4 + Math.PI / 2;
   scene.add(base);
+});
 
-})
 /* =========================
    CHARACTER
 ========================= */
@@ -201,8 +239,7 @@ loader.load('public/models/finalmainmodel.glb', gltf => {
     if (o.isMesh) {
       o.castShadow = false;
       o.receiveShadow = false;
-      if(csm){
-      csm.setupMaterial(o.material);}
+      if (csm) csm.setupMaterial(o.material);
     }
   });
 
@@ -262,7 +299,6 @@ joystick.addEventListener('touchmove', e => {
   const max = 40;
   joyDelta.clampLength(0, max);
   stick.style.transform = `translate(${joyDelta.x - 25}px, ${joyDelta.y - 25}px)`;
-
   joyVector.set(joyDelta.x / max, joyDelta.y / max);
 });
 
@@ -287,15 +323,10 @@ window.addEventListener('touchstart', e => {
 
 window.addEventListener('touchmove', e => {
   if (!touchLook) return;
-
   const t = e.touches[0];
-  const dx = t.clientX - lastTouch.x;
-  const dy = t.clientY - lastTouch.y;
-
-  yaw -= dx * 0.005;
-  pitch -= dy * 0.003;
+  yaw -= (t.clientX - lastTouch.x) * 0.005;
+  pitch -= (t.clientY - lastTouch.y) * 0.003;
   pitch = THREE.MathUtils.clamp(pitch, -0.6, 0.4);
-
   lastTouch.set(t.clientX, t.clientY);
 });
 
@@ -323,29 +354,35 @@ function createMissionStop(x, y, z) {
   group.position.set(x, y, z);
   scene.add(group);
 
+  const enableGlow = QUALITY !== "low";
+
   const column = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.6, 0.6, 2, 32, 1, true),
+    new THREE.CylinderGeometry(0.6, 0.6, 2, 16, 1, true),
     new THREE.MeshBasicMaterial({
       color: 0xff2fd5,
-      transparent: true,
-      opacity: 0.35,
+      transparent: enableGlow,
+      opacity: enableGlow ? 0.35 : 1,
       side: THREE.DoubleSide,
-      blending: THREE.AdditiveBlending,
+      blending: enableGlow ? THREE.AdditiveBlending : THREE.NormalBlending,
       depthWrite: false
     })
   );
 
-  const glow = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.75, 0.75, 2.3, 32, 1, true),
-    new THREE.MeshBasicMaterial({
-      color: 0xff66ff,
-      transparent: true,
-      opacity: 0.25,
-      side: THREE.BackSide,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
-    })
-  );
+  let glow = null;
+  if (enableGlow) {
+    glow = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.75, 0.75, 2.3, 16, 1, true),
+      new THREE.MeshBasicMaterial({
+        color: 0xff66ff,
+        transparent: true,
+        opacity: 0.25,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      })
+    );
+    group.add(glow);
+  }
 
   const ring = new THREE.Mesh(
     new THREE.RingGeometry(0.9, 1.3, 32),
@@ -361,7 +398,7 @@ function createMissionStop(x, y, z) {
   ring.rotation.x = -Math.PI / 2;
   ring.position.y = 0.02;
 
-  group.add(column, glow, ring);
+  group.add(column, ring);
   missionStops.push({ group, column, glow, baseY: y });
 }
 
@@ -379,6 +416,9 @@ const clock = new THREE.Clock();
 
 function animate() {
   requestAnimationFrame(animate);
+
+  measureFPS();
+
   const delta = clock.getDelta();
   mixer?.update(delta);
 
@@ -386,17 +426,14 @@ function animate() {
   const camRight = new THREE.Vector3().crossVectors(camDir, new THREE.Vector3(0, 1, 0));
   const moveDir = new THREE.Vector3();
 
-  // Keyboard
   if (keys.w) moveDir.add(camDir);
   if (keys.s) moveDir.sub(camDir);
   if (keys.a) moveDir.sub(camRight);
   if (keys.d) moveDir.add(camRight);
 
-  // Mobile joystick
   if (joyVector.lengthSq() > 0.01) {
-    moveDir
-      .addScaledVector(camDir, -joyVector.y)
-      .addScaledVector(camRight, joyVector.x);
+    moveDir.addScaledVector(camDir, -joyVector.y)
+           .addScaledVector(camRight, joyVector.x);
   }
 
   let nextAction = actions.idle;
@@ -426,17 +463,19 @@ function animate() {
   const t = performance.now() * 0.004;
   missionStops.forEach(ms => {
     ms.group.position.y = ms.baseY + Math.sin(t) * 0.25;
-    const pulse = Math.sin(t * 2) * 0.15 + 1;
+    const pulse = QUALITY === "low" ? 1 : (Math.sin(t * 2) * 0.15 + 1);
     ms.column.scale.set(pulse, 1, pulse);
-    ms.glow.scale.set(pulse * 1.2, 1, pulse * 1.2);
-    ms.group.rotation.y += 0.005;
+    if (ms.glow) ms.glow.scale.set(pulse * 1.2, 1, pulse * 1.2);
+    if (QUALITY !== "low") ms.group.rotation.y += 0.005;
   });
 
-  if(csm){csm.update();}
+  if (csm) csm.update();
+
   renderer.render(scene, camera);
   minimapRenderer.render(scene, minimapCamera);
 }
 
+applyQualitySettings();
 animate();
 
 /* =========================
