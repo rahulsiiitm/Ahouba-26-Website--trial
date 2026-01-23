@@ -232,11 +232,22 @@ loader.load('public/models/scene223.glb', gltf => {
 
 loader.load('public/models/death_note.glb', gltf => {
   const base = gltf.scene;
-  base.position.set(5, -35, 0);
+  base.position.set(10, -35, 5);
   base.scale.set(1.5, 1.5, 1.5);
   base.rotation.y = Math.PI / 4 + Math.PI / 2;
   scene.add(base);
 });
+
+/* =========================
+   MAP BOUNDARIES (ZERO FPS)
+========================= */
+const MAP_BOUNDS = {
+  minX: -155,
+  maxX:  120,
+  minZ: -80,
+  maxZ:  160,
+};
+
 
 /* =========================
    CHARACTER
@@ -450,6 +461,43 @@ createMissionStop(7, 0, 50);
 createMissionStop(-60, 0, -10);
 createMissionStop(35, 0, -30);
 createMissionStop(-97, 0, 80);
+/*world boundaries*/
+function clampCharacterPosition() {
+  character.position.x = Math.max(
+    MAP_BOUNDS.minX,
+    Math.min(MAP_BOUNDS.maxX, character.position.x)
+  );
+
+  character.position.z = Math.max(
+    MAP_BOUNDS.minZ,
+    Math.min(MAP_BOUNDS.maxZ, character.position.z)
+  );
+}
+/* =========================
+   BOUNDARY DEBUG HELPER
+========================= 
+let boundaryHelper = null;
+
+function addBoundaryHelper() {
+  const width  = MAP_BOUNDS.maxX - MAP_BOUNDS.minX;
+  const depth  = MAP_BOUNDS.maxZ - MAP_BOUNDS.minZ;
+  const height = 5;
+
+  const geo = new THREE.BoxGeometry(width, height, depth);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xff0000,
+    wireframe: true
+  });
+
+  boundaryHelper = new THREE.Mesh(geo, mat);
+  boundaryHelper.position.set(
+    (MAP_BOUNDS.minX + MAP_BOUNDS.maxX) / 2,
+    height / 2,
+    (MAP_BOUNDS.minZ + MAP_BOUNDS.maxZ) / 2
+  );
+
+  scene.add(boundaryHelper);
+}*/
 
 /* =========================
    ANIMATE
@@ -480,12 +528,17 @@ function animate() {
 
   let nextAction = actions.idle;
 
-  if (moveDir.lengthSq()) {
-    moveDir.normalize();
-    character.position.addScaledVector(moveDir, delta * 10);
-    character.rotation.y = Math.atan2(moveDir.x, moveDir.z);
-    nextAction = actions.running;
-  }
+if (moveDir.lengthSq()) {
+  moveDir.normalize();
+  character.position.addScaledVector(moveDir, delta * 20);
+
+  // 🔒 Clamp inside map
+  clampCharacterPosition();
+
+  character.rotation.y = Math.atan2(moveDir.x, moveDir.z);
+  nextAction = actions.running;
+}
+
 
   if (nextAction && nextAction !== currentAction) {
     currentAction.fadeOut(0.15);
@@ -516,6 +569,7 @@ function animate() {
   renderer.render(scene, camera);
   minimapRenderer.render(scene, minimapCamera);
 }
+//addBoundaryHelper();
 
 applyQualitySettings();
 animate();
