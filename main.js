@@ -150,7 +150,7 @@ function enableCSM() {
     mode: 'practical',
     parent: scene,
     shadowMapSize: 2048,
-    lightDirection: new THREE.Vector3(-1, -1, 1),
+    lightDirection: new THREE.Vector3(-10, -10, 1),
     camera
   });
 
@@ -721,7 +721,79 @@ window.addEventListener('resize', () => {
   minimapRenderer.setSize(minimapContainer.clientWidth, minimapContainer.clientHeight);
 });
 
+/* =========================
+   MINIMAP FULLSCREEN PATCH (APPEND ONLY)
+========================= */
+
+const minimapContainer1 = document.getElementById('minimap');
+const fullmapContainer = document.getElementById('fullmap');
+const closeMapBtn = document.getElementById('closeMapBtn');
+
+let isFullMapOpen = false;
+
+if (minimapContainer1 && fullmapContainer && closeMapBtn) {
+
+  minimapContainer1.addEventListener('click', () => {
+    if (!minimapRenderer || !minimapCamera) return;
+
+    isFullMapOpen = true;
+
+    fullmapContainer.style.display = 'flex';
+    closeMapBtn.style.display = 'block';
+
+    fullmapContainer.appendChild(minimapRenderer.domElement);
+    minimapRenderer.setSize(window.innerWidth, window.innerHeight);
+
+    const zoom = 100;
+    minimapCamera.left = -zoom;
+    minimapCamera.right = zoom;
+    minimapCamera.top = zoom;
+    minimapCamera.bottom = -zoom;
+    minimapCamera.updateProjectionMatrix();
+  });
+
+  closeMapBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!minimapRenderer || !minimapCamera) return;
+
+    isFullMapOpen = false;
+
+    fullmapContainer.style.display = 'none';
+    closeMapBtn.style.display = 'none';
+
+    minimapContainer1.appendChild(minimapRenderer.domElement);
+    minimapRenderer.setSize(
+      minimapContainer1.clientWidth,
+      minimapContainer1.clientHeight
+    );
+
+    minimapCamera.left = -20;
+    minimapCamera.right = 20;
+    minimapCamera.top = 20;
+    minimapCamera.bottom = -20;
+    minimapCamera.updateProjectionMatrix();
+  });
+
+}
+
+/* =========================
+   RENDER PAUSE WHILE MAP OPEN (SAFE HOOK)
+========================= */
+
+if (typeof animate === "function") {
+  const __oldAnimate = animate;
+
+  window.animate = function () {
+    if (!isFullMapOpen) {
+      __oldAnimate();
+    } else {
+      // still render scene + minimap without game logic
+      renderer.render(scene, camera);
+      minimapRenderer.render(scene, minimapCamera);
+      requestAnimationFrame(window.animate);
+    }
+  };
+}
 
 //i want the camera to always turns where the character turns like mimics  a human eye 
-
 

@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Three.js Game</title>
-  <link rel="stylesheet" href="style.css">
- 
+  <link rel="stylesheet" href="style.css"/>
 
   <script type="importmap">
   {
@@ -18,48 +17,54 @@
 </head>
 <body>
 
-  <!-- NAVBAR EXAMPLE -->
   <div id="navbar">
     <button>Home</button>
     <button>Event</button>
     <button>Glimpses</button>
   </div>
 
-  <!-- HUD -->
   <div id="hud">
-    <div class="row">
-      <div class="key" id="key-w">W</div>
-    </div>
+    <div class="row"><div class="key" id="key-w">W</div></div>
     <div class="row">
       <div class="key" id="key-a">A</div>
       <div class="key" id="key-s">S</div>
       <div class="key" id="key-d">D</div>
     </div>
-    <div class="row">
-      <div class="key wide" id="key-shift">SHIFT</div>
-    </div>
+    <div class="row"><div class="key wide" id="key-shift">SHIFT</div></div>
   </div>
 
-  <!-- MINIMAP -->
   <div class="minimap" id="minimap"></div>
-  <!-- laoding screen -->
-  <div class = "progress-bar-container">
+
+  <div id="fullmap"></div>
+  <button id="closeMapBtn">Close Map</button>
+
+  <div class="progress-bar-container">
     <label for="progress-bar">LOADING....</label>
-    <progress id ="progress-bar" value="0" max="100"></progress>
-    <p id="start-instruction" style="display: none; color:white;margin-top:10px; font-family: sans-serif;">
-      Use W/a/s/d to move <br>
-      Mouse to look Around<br>
-      Press ENTER or tap to start
-    </p>
-   </div>
-   
-   <!-- MOBILE CONTROLS -->
-<div id="mobile-controls">
-  <div id="joystick">
-    <div class="stick"></div>
+    <progress id="progress-bar" value="0" max="100"></progress>
   </div>
-  
-</div>
+
+  <div id="mobile-controls">
+    <div id="joystick"><div class="stick"></div></div>
+  </div>
+
+  <div id="interactPrompt">Press <b>E</b> or Tap to Interact</div>
+
+  <div id="missionPopupOverlay">
+    <div id="missionPopup">
+      <h2 id="missionTitle">Title</h2>
+      <div id="missionContent">Content goes here</div>
+
+      <div class="popup-buttons">
+        <button class="popup-btn" data-action="events">Events</button>
+        <button class="popup-btn" data-action="glimpses">Glimpses</button>
+        <button class="popup-btn" data-action="sponsors">Sponsors</button>
+        <button class="popup-btn" data-action="about">About Ahouba</button>
+        <button class="popup-btn" data-action="etc">Etc</button>
+      </div>
+
+      <button id="closePopup">Close</button>
+    </div>
+  </div>
 
   <script type="module" src="main.js"></script>
 </body>
