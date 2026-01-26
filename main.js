@@ -397,8 +397,8 @@ window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 /* =========================
    CAMERA ROTATION (SMOOTH)
 ========================= */
-let yaw = 0, pitch = 0;
-let targetYaw = 0, targetPitch = 0;
+let yaw = Math.PI, pitch = 0;
+let targetYaw = Math.PI, targetPitch = 0;
 let yawVel = 0, pitchVel = 0;
 let mouseDown = false;
 
@@ -586,12 +586,10 @@ function createMissionStop(x, y, z) {
   missionStops.push({ group, column, glow, baseY: y });
 }
 
-createMissionStop(7, 0, 7);
+createMissionStop(50, 0, 49);
 createMissionStop(-4, 0, -72);
-createMissionStop(7, 0, 50);
-createMissionStop(-60, 0, -10);
-createMissionStop(35, 0, -30);
-createMissionStop(-97, 0, 80);
+createMissionStop(-55,0,110);
+createMissionStop(60,0,170);
 /*world boundaries*/
 function clampCharacterPosition() {
   character.position.x = Math.max(
@@ -604,6 +602,8 @@ function clampCharacterPosition() {
     Math.min(MAP_BOUNDS.maxZ, character.position.z)
   );
 }
+
+
 /* =========================
    BOUNDARY DEBUG HELPER
 ========================= 
@@ -661,7 +661,7 @@ function animate() {
 
 if (moveDir.lengthSq()) {
   moveDir.normalize();
-const speed = 20 * delta;
+const speed = 10 * delta;
 const nextPos = character.position.clone().addScaledVector(moveDir, speed);
 
 if (!wouldCollide(nextPos)) {
@@ -720,3 +720,8 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   minimapRenderer.setSize(minimapContainer.clientWidth, minimapContainer.clientHeight);
 });
+
+
+//i want the camera to always turns where the character turns like mimics  a human eye 
+
+
