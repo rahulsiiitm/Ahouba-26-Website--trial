@@ -532,8 +532,42 @@ const desiredOffset = new THREE.Vector3(
    MISSION STOPS
 ========================= */
 const missionStops = [];
+// ✅ Create Floating Label Sprite Above Pillar
+function createMissionLabel(text) {
 
-function createMissionStop(x, y, z) {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = 256;
+  canvas.height = 128;
+
+  // Background
+  ctx.fillStyle = "rgba(0,0,0,0.6)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Text
+  ctx.font = "bold 40px Arial";
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text.toUpperCase(), canvas.width / 2, canvas.height / 2);
+
+  // Texture from canvas
+  const texture = new THREE.CanvasTexture(canvas);
+
+  // Sprite Material
+  const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+
+  // Sprite
+  const sprite = new THREE.Sprite(spriteMaterial);
+
+  sprite.scale.set(6, 3, 1); // size in world
+
+  return sprite;
+}
+
+
+function createMissionStop(x, y, z, missionKey) {
   const group = new THREE.Group();
   group.position.set(x, y, z);
   scene.add(group);
@@ -583,13 +617,20 @@ function createMissionStop(x, y, z) {
   ring.position.y = 0.02;
 
   group.add(column, ring);
-  missionStops.push({ group, column, glow, baseY: y });
+  // Floating Mission Name
+// ✅ Add floating label above pillar
+const labelSprite = createMissionLabel(missionKey);
+labelSprite.position.set(0, 6, 0); // height above pillar
+group.add(labelSprite);
+
+
+  missionStops.push({ group, column, glow, baseY: y, key: missionKey, label: labelSprite});
 }
 
-createMissionStop(50, 0, 49);
-createMissionStop(-4, 0, -72);
-createMissionStop(-55,0,110);
-createMissionStop(60,0,170);
+createMissionStop(50, 0, 49, "events");
+createMissionStop(-4, 0, -72, "sponsors");
+createMissionStop(-55,0,110, "glimpses");
+createMissionStop(60,0,170, "about");
 /*world boundaries*/
 function clampCharacterPosition() {
   character.position.x = Math.max(
@@ -643,16 +684,34 @@ function checkMissionProximity() {
   }
 
   interactPrompt.style.display = activeMission !== null ? "block" : "none";
+  if (activeMission !== null && window.innerWidth < 920) {
+  interactPrompt.innerHTML = "Tap to Interact";
+} else {
+  interactPrompt.innerHTML = "Press <b>E</b> or Tap to Interact";
+}
+
 }
 
 /* =========================
    POPUP CONTROL
 ========================= */
 function openMissionPopup() {
-  popupTitle.textContent = "Ahouba Mission Hub";
-  popupContent.innerHTML = "Choose an option below:";
+
+  if (activeMission === null) return;
+
+  // ✅ Get mission type of current stop
+  const missionKey = missionStops[activeMission].key;
+
+  // ✅ Title changes automatically
+  popupTitle.textContent = missionKey.toUpperCase();
+
+  // ✅ Load correct content automatically
+  popupContent.innerHTML =
+    missionContentData[missionKey] || "No content found.";
+
   popupOverlay.style.display = "flex";
 }
+
 
 function closeMissionPopup() {
   popupOverlay.style.display = "none";
@@ -672,9 +731,7 @@ interactPrompt.addEventListener("touchstart", (e) => {
     openMissionPopup();
   }
 });
-if (activeMission !== null && window.innerWidth < 768) {
-  interactPrompt.innerHTML = "Tap to Interact";
-}
+
 
 interactPrompt.addEventListener("click", () => {
   if (activeMission !== null) {
@@ -731,6 +788,128 @@ function addBoundaryHelper() {
   scene.add(boundaryHelper);
 }
 */
+
+/* ==========================================
+   ✅ HERO POSTER GALLERY SYSTEM (APPEND ONLY)
+========================================== */
+
+const galleryBox = document.getElementById("missionGallery");
+const galleryTrack = document.getElementById("galleryTrack");
+const galleryPrev = document.getElementById("galleryPrev");
+const galleryNext = document.getElementById("galleryNext");
+
+/* ✅ Mission Galleries Data */
+const missionGalleryData = {
+  glimpses: [
+    "public/models/A3.jpg",
+    "public/models/Logo_Cubeten2.png",
+    "public/models/babinanew.jpg",
+    "public/models/codexp_logo",
+    "public/models/icici.jpg"
+  ],
+
+  events: [
+    "public/models/events.jpg",
+    "public/models/2.png",
+    "public/models/3.png",
+    "public/models/4.png",
+    "public/models/5.png",
+  ]
+};
+
+let galleryIndex = 0;
+let activeGallery = [];
+
+/* ✅ Render Gallery View */
+function renderGallery() {
+  galleryTrack.innerHTML = "";
+
+  if (activeGallery.length === 0) return;
+
+  // Left small
+  const leftIndex = (galleryIndex - 1 + activeGallery.length) % activeGallery.length;
+  // Center hero
+  const heroIndex = galleryIndex;
+  // Right small
+  const rightIndex = (galleryIndex + 1) % activeGallery.length;
+
+  const items = [
+    { src: activeGallery[leftIndex], type: "small" },
+    { src: activeGallery[heroIndex], type: "hero" },
+    { src: activeGallery[rightIndex], type: "small" }
+  ];
+items.forEach(item => {
+  const div = document.createElement("div");
+  div.className = `gallery-item ${item.type}`;
+
+  const img = document.createElement("img");
+  img.src = item.src;
+
+  div.appendChild(img);
+  galleryTrack.appendChild(div);
+
+  // ✅ Add pop animation only for hero
+  if (item.type === "hero") {
+    div.classList.add("gallery-pop");
+
+    setTimeout(() => {
+      div.classList.remove("gallery-pop");
+    }, 400);
+  }
+});
+
+}
+
+/* ✅ Controls */
+galleryPrev.addEventListener("click", () => {
+  galleryIndex = (galleryIndex - 1 + activeGallery.length) % activeGallery.length;
+  renderGallery();
+});
+
+galleryNext.addEventListener("click", () => {
+  galleryIndex = (galleryIndex + 1) % activeGallery.length;
+  renderGallery();
+});
+
+/* ✅ Swipe Support (Mobile) */
+let startX = 0;
+
+galleryTrack.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+});
+
+galleryTrack.addEventListener("touchend", e => {
+  let endX = e.changedTouches[0].clientX;
+  let diff = endX - startX;
+
+  if (diff > 50) galleryPrev.click();
+  if (diff < -50) galleryNext.click();
+});
+
+/* ==========================================
+   ✅ Hook Gallery Into Popup (APPEND ONLY)
+========================================== */
+
+const __oldOpenMissionPopup = openMissionPopup;
+
+openMissionPopup = function () {
+  __oldOpenMissionPopup();
+
+  if (activeMission === null) return;
+
+  const missionKey = missionStops[activeMission].key;
+
+  // Show gallery only if mission has images
+  if (missionGalleryData[missionKey]) {
+    galleryBox.style.display = "block";
+    activeGallery = missionGalleryData[missionKey];
+    galleryIndex = 0;
+    renderGallery();
+  } else {
+    galleryBox.style.display = "none";
+  }
+};
+
 /* =========================
    ANIMATE
 ========================= */
@@ -900,5 +1079,5 @@ if (typeof animate === "function") {
   };
 }
 
-//i want the camera to always turns where the character turns like mimics  a human eye 
+ 
 

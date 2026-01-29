@@ -207,8 +207,10 @@
 
 /* ===== POPUP BOX ===== */
 #missionPopup {
-  width: 90%;
-  max-width: 420px;
+  display:flex;
+  flex-direction: column;
+  width: 90vw;
+  height: 80vh;
   background: #111;
   border: 2px solid #ff66ff;
   border-radius: 14px;
@@ -268,6 +270,18 @@
 #missionPopupOverlay {
   z-index: 3000;
   pointer-events: auto;
+}
+.mission-label {
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 6px 12px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 12px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
 }
 
 /* ===== CLOSE BUTTON ===== */
@@ -335,3 +349,120 @@
   cursor: pointer;
   display: none;
 }
+
+
+/* ================================
+   ✅ HERO POSTER GALLERY POPUP
+================================ */
+
+.hero-gallery {
+  width: 100%;
+  
+  height: 65vh;
+  margin: 20px auto;
+  position: relative;
+  top:50px;
+  
+  display: none; /* hidden until mission needs it */
+}
+
+.gallery-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: transform 0.4s ease;
+}
+
+.gallery-item {
+  flex-shrink: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(255, 102, 255, 0.5);
+  transition: all 0.35s ease;
+}
+
+/* Small posters */
+
+
+
+/* Hero poster */
+
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Buttons */
+.gallery-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  border: none;
+  color: white;
+  font-size: 22px;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 50%;
+  z-index: 10;
+  transition: 0.2s;
+}
+
+.gallery-btn:hover {
+  background: rgba(255, 102, 255, 0.8);
+}
+
+.gallery-btn.left {
+  left: 6px;
+}
+
+.gallery-btn.right {
+  right: 6px;
+}
+/* ================================
+   ✅ PREMIUM HERO SLIDE ANIMATION
+================================ */
+
+/* Hero comes up */
+.gallery-item.hero {
+  width: 50vw;
+  height: 50vh;
+  opacity: 1;
+  transform: scale(1.15) translateY(-15px);
+  z-index: 5;
+  object-fit: cover;
+}
+
+/* Side posters go below */
+.gallery-item.small {
+  width: 85px;
+  height: 120px;
+  opacity: 0.45;
+  transform: scale(0.85) translateY(20px);
+  z-index: 1;
+}
+
+/* Smooth transition */
+.gallery-item {
+  transition: all 0.45s ease-in-out;
+}
+
+/* Pop animation when hero changes */
+.gallery-pop {
+  animation: heroPop 0.4s ease;
+}
+
+@keyframes heroPop {
+  0% {
+    transform: scale(0.95) translateY(10px);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.15) translateY(-15px);
+    opacity: 1;
+  }
+}
+
