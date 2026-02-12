@@ -1,3 +1,20 @@
+const scene = new THREE.Scene();
+
+// RENDERER
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const textureloader = new THREE.TextureLoader();
+
+// MINIMAP RENDERER
+const minimapContainer = document.getElementById('minimap');
+const minimapRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+minimapRenderer.setSize(minimapContainer.clientWidth, minimapContainer.clientHeight);
+minimapRenderer.setPixelRatio(window.devicePixelRatio);
+minimapContainer.appendChild(minimapRenderer.domElement);
 /* =========================================================
    PROJECT: Ahouba 3D Interactive Experience
    AUTHOR: Sanjeev Singh
@@ -91,14 +108,12 @@
    20. Resize Handling
    21. Navbar UI System
 
-========================================================= */
 
 
 
 /* =========================================================
 AUTO DEVICE DETECTION + UI TOGGLE (ADDED)
    
-========================================================= */
 (function () {
   const body = document.body;
 
@@ -206,7 +221,8 @@ hud.style.pointerEvents = "none";
 hud.style.borderRadius = "6px";
 hud.style.border = "1px solid rgba(0,240,255,0.3)";
 hud.style.backdropFilter = "blur(5px)";
-document.body.appendChild(hud);
+// Uncomment to show FPS on screen
+// document.body.appendChild(hud);
 
 setInterval(() => {
   hud.innerHTML = `FPS: ${avgFPS.toFixed(1)}<br>Quality: ${QUALITY}`;
@@ -375,8 +391,17 @@ let userReady = false;
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter') { userReady = true; tryStartGame(); }
 });
-document.addEventListener('click', () => { userReady = true; tryStartGame(); });
-document.addEventListener('touchstart', () => { userReady = true; tryStartGame(); });
+// FIX: Prevent game start if clicking navbar
+document.addEventListener('click', (e) => { 
+    if(e.target.closest('button') || e.target.closest('.navbar')) return;
+    userReady = true; 
+    tryStartGame(); 
+});
+document.addEventListener('touchstart', (e) => { 
+    if(e.target.closest('button') || e.target.closest('.navbar')) return;
+    userReady = true; 
+    tryStartGame(); 
+});
 loadingManager.onLoad = () => { assetsLoaded = true; tryStartGame(); };
 
 function tryStartGame() {
@@ -388,7 +413,6 @@ function tryStartGame() {
 
 /* =========================
    WORLD
-========================= 
 const skyGeo = new THREE.SphereGeometry(4,60,40);
 const skyMat = new THREE.MeshBasicMaterial({
   map: textureloader.load("public/models/nightsky1.jpg"), 
@@ -540,14 +564,14 @@ loader.load('public/models/finalmainmodel.glb', gltf => {
 });
 
 /* =========================
-   PHYSICS & MOVEMENT (FIXED SKIDDING)
+   PHYSICS & MOVEMENT
 ========================= */
 const GRAVITY = -35;
 const JUMP_FORCE = 12;
 const WALK_SPEED = 8;
 const SPRINT_SPEED = 15;
-const ACCELERATION = 60; // Higher accel for snapping
-const DECELERATION = 40; // Higher friction to stop slide
+const ACCELERATION = 60; 
+const DECELERATION = 40; 
 const AIR_CONTROL = 0.5;
 
 let velocity = new THREE.Vector3();
@@ -577,6 +601,37 @@ function updateKeyVisuals() {
     });
 }
 
+let yaw = Math.PI;
+let pitch = 0.35;
+let cameraDist = 2.8;
+const MIN_DIST = 2.0;
+const MAX_DIST = 8.0;
+const MOUSE_SENSITIVITY = 0.0022;
+const CAMERA_SMOOTHING = 5;
+
+let targetYaw = yaw;
+let targetPitch = pitch;
+
+renderer.domElement.addEventListener('click', (e) => {
+  // FIX: Don't lock pointer if clicking UI
+  if (e.target.closest('button') || e.target.closest('.navbar')) return;
+    if (popupOverlay && popupOverlay.style.display !== 'flex') {
+        document.body.requestPointerLock();
+    }
+});
+
+document.addEventListener('mousemove', e => {
+    if (document.pointerLockElement === document.body) {
+        targetYaw -= e.movementX * MOUSE_SENSITIVITY;
+        targetPitch -= e.movementY * MOUSE_SENSITIVITY;
+        targetPitch = THREE.MathUtils.clamp(targetPitch, -0.3, 1.3);
+    }
+});
+
+document.addEventListener('wheel', e => {
+    cameraDist += e.deltaY * 0.007;
+    cameraDist = THREE.MathUtils.clamp(cameraDist, MIN_DIST, MAX_DIST);
+}, { passive: true });
 
 /* =========================
    MOBILE
@@ -615,7 +670,8 @@ let touchLook = false;
 let lastTouch = new THREE.Vector2();
 
 window.addEventListener('touchstart', e => {
-  if (e.target.closest('#joystick')) return;
+  // FIX: Don't look around if touching UI
+  if (e.target.closest('#joystick') || e.target.closest('.navbar')) return;
   touchLook = true;
   lastTouch.set(e.touches[0].clientX, e.touches[0].clientY);
 });
@@ -685,7 +741,7 @@ function updatePlayerMovement(delta) {
   isSprinting = keys.shift && inputDir.lengthSq() > 0;
   const targetSpeed = isSprinting ? SPRINT_SPEED : WALK_SPEED;
   
-  // Acceleration Logic
+  // Acceleration
   if (inputDir.lengthSq() > 0.001) {
     inputDir.normalize();
     const accel = isGrounded ? ACCELERATION : ACCELERATION * AIR_CONTROL;
@@ -701,7 +757,7 @@ function updatePlayerMovement(delta) {
       velocity.z *= scale;
     }
   } else {
-    // Deceleration (Friction)
+    // Deceleration
     const decel = isGrounded ? DECELERATION : DECELERATION * AIR_CONTROL;
     const hSpeed = Math.sqrt(velocity.x ** 2 + velocity.z ** 2);
     const newHSpeed = Math.max(0, hSpeed - decel * delta);
@@ -732,25 +788,19 @@ function updatePlayerMovement(delta) {
     isGrounded = false;
   }
 
-  // ✅ ROTATION FIX: Rotate towards VELOCITY, not Input
-  // This prevents the "skidding" look because feet align with slide
+  // Rotation
   const hSpeed = Math.sqrt(velocity.x ** 2 + velocity.z ** 2);
   
   if (hSpeed > 0.5) {
-      // 1. Calculate angle from velocity
       const targetRot = Math.atan2(velocity.x, velocity.z);
-      
-      // 2. Smoothly rotate character
       const rotDiff = ((targetRot - character.rotation.y + Math.PI) % (Math.PI * 2)) - Math.PI;
       character.rotation.y += rotDiff * 15 * delta;
 
-      // 3. Add "Banking" (Tilt into turn) for realism
       if(character.children[0]) {
-          const tilt = -rotDiff * 0.5; // Lean magnitude
+          const tilt = -rotDiff * 0.5;
           character.children[0].rotation.z = THREE.MathUtils.lerp(character.children[0].rotation.z, tilt, 10 * delta);
       }
   } else {
-      // Return to upright when stopped
       if(character.children[0]) {
            character.children[0].rotation.z = THREE.MathUtils.lerp(character.children[0].rotation.z, 0, 10 * delta);
       }
@@ -872,34 +922,7 @@ function changeCharacterPosition(btnId) {
   else if (btnId === "aboutBtn") {
     character.position.set(-10, 0, 120);
   }
-
-  console.log("Moved via:", btnId);
 }
-
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest("button");
-  if (!btn) return;
-
-  e.stopPropagation();
-  document.exitPointerLock();
-
-  changeCharacterPosition(btn.id);
-});
-const hamburger = document.getElementById("hamburger");
-const navLinks = document.querySelector(".nav-links");
-
-if (hamburger) {
-  hamburger.addEventListener("click", (e) => {
-    e.stopPropagation();
-    navLinks.classList.toggle("active");
-    document.exitPointerLock();
-  });
-}
-
-document.addEventListener("click", () => {
-  navLinks.classList.remove("active");
-});
-
 
 /* =========================
    UI
@@ -1017,6 +1040,42 @@ if (galleryNext) galleryNext.addEventListener("click", () => {
   renderGallery();
 });
 
+const closeMapBtn = document.getElementById('closeMapBtn');
+const fullmapContainer = document.getElementById('fullmap');
+let isFullMapOpen = false;
+
+if (minimapContainer && fullmapContainer && closeMapBtn) {
+    minimapContainer.addEventListener('click', () => {
+        isFullMapOpen = true;
+        document.exitPointerLock();
+        
+        // --- CRITICAL FIX: MOVE ELEMENTS TO BODY ---
+        document.body.appendChild(fullmapContainer);
+        document.body.appendChild(closeMapBtn);
+        // -------------------------------------------
+
+        fullmapContainer.style.display = 'flex';
+        closeMapBtn.style.display = 'block'; // Make button visible
+        fullmapContainer.appendChild(minimapRenderer.domElement);
+        minimapRenderer.setSize(window.innerWidth, window.innerHeight);
+        const zoom = 100;
+        minimapCamera.left = -zoom; minimapCamera.right = zoom;
+        minimapCamera.top = zoom; minimapCamera.bottom = -zoom;
+        minimapCamera.updateProjectionMatrix();
+    });
+    
+    closeMapBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Stop click passing through to game
+        isFullMapOpen = false;
+        fullmapContainer.style.display = 'none';
+        closeMapBtn.style.display = 'none'; // Hide button
+        
+        // Return renderer to small minimap
+        minimapContainer.appendChild(minimapRenderer.domElement);
+        minimapRenderer.setSize(minimapContainer.clientWidth, minimapContainer.clientHeight);
+        minimapCamera.left = -20; minimapCamera.right = 20;
+        minimapCamera.top = 20; minimapCamera.bottom = -20;
+        minimapCamera.updateProjectionMatrix();
 
 /* ===== NAVBAR UI ===== */
 
@@ -1112,4 +1171,90 @@ window.addEventListener('resize', () => {
 applyQualitySettings();
 
 
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.getElementById("hamburger");
+  const navLinks = document.querySelector(".nav-links");
+  const navButtons = document.querySelectorAll(".nav-links button");
+
+  if (!hamburger || !navLinks) return;
+
+  // Toggle Menu
+  hamburger.addEventListener("click", (e) => {
+    e.stopPropagation(); // Stop clicking through to game
+    e.preventDefault();  // Stop default touches
+    
+    // Toggle active classes
+    if(navLinks.classList.contains("active")) {
+        closeMenu();
+    } else {
+        openMenu();
+    }
+  });
+
+  // Handle Menu Buttons (Teleport)
+  navButtons.forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation(); // Prevent immediate closing if logic conflicts
+      changeCharacterPosition(btn.id); 
+      closeMenu();
+      document.exitPointerLock(); // Unlock cursor so user sees they clicked
+    });
+  });
+
+  // Close if clicking outside
+  document.addEventListener("click", (e) => {
+      // If the click is NOT inside the navbar and NOT inside the hamburger
+      if (!e.target.closest('.navbar') && !e.target.closest('.hamburger')) {
+          closeMenu();
+      }
+  });
+
+  function openMenu() {
+      hamburger.classList.add("active");
+      navLinks.classList.add("active");
+      // Safety: Unlock pointer so user can actually click the links
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      }
+  }
+
+  function closeMenu() {
+      hamburger.classList.remove("active");
+      navLinks.classList.remove("active");
+  }
+});
+/* =========================
+   FORCE DEVICE DETECTION
+/* =========================
+   STRICT DEVICE DETECTION
+function detectDevice() {
+  const joystick = document.getElementById('joystick');
+  const hud = document.getElementById('hud');
+  const mobileControls = document.getElementById('mobile-controls');
+
+  // Check 1: Does the device primarily use a touch interface? (Finger)
+  const isTouchInterface = window.matchMedia("(pointer: coarse)").matches;
+
+  // Check 2: Is the screen actually mobile/tablet sized?
+  // (Prevents joystick on huge touch monitors or smart TVs)
+  const isSmallScreen = window.innerWidth < 1024;
+
+  if (isTouchInterface && isSmallScreen) {
+    // --- MOBILE/TABLET MODE ---
+    if (joystick) joystick.style.display = 'block';
+    if (mobileControls) mobileControls.style.display = 'block';
+    if (hud) hud.style.display = 'none';
+  } else {
+    // --- DESKTOP/LAPTOP MODE ---
+    // Even if the window is resized to 500px, if the pointer is 'fine' (mouse),
+    // we keep the desktop UI.
+    if (joystick) joystick.style.display = 'none';
+    if (mobileControls) mobileControls.style.display = 'none';
+    if (hud) hud.style.display = 'flex';
+  }
+}
+
+// Run on load and resize
+detectDevice();
+window.addEventListener('resize', detectDevice);
 //button settings
