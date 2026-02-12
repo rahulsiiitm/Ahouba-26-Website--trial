@@ -79,7 +79,7 @@ hud.style.borderRadius = "6px";
 hud.style.border = "1px solid rgba(0,240,255,0.3)";
 hud.style.backdropFilter = "blur(5px)";
 // Uncomment to show FPS on screen
-// document.body.appendChild(hud);
+//document.body.appendChild(hud);
 
 setInterval(() => {
   hud.innerHTML = `FPS: ${avgFPS.toFixed(1)}<br>Quality: ${QUALITY}`;
@@ -563,7 +563,7 @@ function createMissionStop(x, y, z, missionKey) {
   const enableGlow = QUALITY !== "low";
 
   const column = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.7, 0.7, 2.5, 20, 1, true),
+    new THREE.CylinderGeometry(0.7, 0.7,1.5, 20, 1, true),
     new THREE.MeshStandardMaterial({
       color: 0xff2fd5, emissive: 0xff2fd5, emissiveIntensity: 3.0, transparent: true, opacity: 0.8, side: THREE.DoubleSide
     })
@@ -572,7 +572,7 @@ function createMissionStop(x, y, z, missionKey) {
   let glow = null;
   if (enableGlow) {
     glow = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.0, 1.0, 3.0, 20, 1, true),
+      new THREE.CylinderGeometry(1.0, 1.0, 2.0, 20, 1, true),
       new THREE.MeshBasicMaterial({
         color: 0xff66ff, transparent: true, opacity: 0.3, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false
       })
@@ -613,8 +613,10 @@ createMissionStop(-18, 0, 130, "glimpses");
 createMissionStop(-10, 0, 120, "about");
 
 function changeCharacterPosition(btnId) {
+  character.rotation.y = Math.PI;
   if (btnId === "eventBtn") {
     character.position.set(0, 0, 130);
+    
   } 
   else if (btnId === "sponsorBtn") {
     character.position.set(-10, 0, 140);
