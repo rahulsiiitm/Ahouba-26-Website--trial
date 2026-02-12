@@ -1,3 +1,10 @@
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { CSM } from 'three/addons/csm/CSM.js';
+
+/* =========================
+   SCENE SETUP
+========================= */
 const scene = new THREE.Scene();
 
 // RENDERER
@@ -15,156 +22,6 @@ const minimapRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }
 minimapRenderer.setSize(minimapContainer.clientWidth, minimapContainer.clientHeight);
 minimapRenderer.setPixelRatio(window.devicePixelRatio);
 minimapContainer.appendChild(minimapRenderer.domElement);
-/* =========================================================
-   PROJECT: Ahouba 3D Interactive Experience
-   AUTHOR: Sanjeev Singh
-   ENGINE: Three.js
-   DESCRIPTION:
-   A third-person interactive 3D world with:
-   - Character controller (physics + animation)
-   - Dynamic camera system (orbit-based)
-   - Adaptive quality system (FPS-based scaling)
-   - Mission interaction system
-   - Popup UI + Gallery
-   - Minimap + Fullmap system
-   - Mobile + Desktop control support
-   - Dynamic shadow management (CSM)
-
-   =========================================================
-   GLOBAL SYSTEM VARIABLES EXPLAINED
-   =========================================================
-
-   --- CAMERA SYSTEM ---
-   yaw                → Horizontal camera rotation (left/right orbit angle)
-   pitch              → Vertical camera rotation (up/down orbit angle)
-   targetYaw          → Smoothed target yaw for interpolation
-   targetPitch        → Smoothed target pitch for interpolation
-   cameraDist         → Distance between camera and character
-   MIN_DIST/MAX_DIST  → Zoom limits
-   MIN_PITCH/MAX_PITCH→ Vertical look constraints
-   CAMERA_SMOOTHING   → Lerp factor for smooth camera motion
-
-   --- CHARACTER MOVEMENT ---
-   character.position.x → Character world X position
-   character.position.y → Character vertical position (jumping/gravity)
-   character.position.z → Character world Z position
-   velocity            → Current player velocity (Vector3)
-   GRAVITY             → Downward acceleration force
-   JUMP_FORCE          → Upward impulse on jump
-   WALK_SPEED          → Normal movement speed
-   SPRINT_SPEED        → Sprint movement speed
-   ACCELERATION        → Horizontal acceleration rate
-   DECELERATION        → Friction when stopping
-   AIR_CONTROL         → Movement control multiplier in air
-   isGrounded          → Whether player is touching ground
-   isSprinting         → Whether sprint key is active
-
-   --- COLLISION SYSTEM ---
-   BLOCKED_NAMES       → Mesh names treated as colliders
-   blockedBoxes        → Bounding boxes of collidable meshes
-   playerBox           → Player collision bounding box
-   PLAYER_RADIUS       → Horizontal collision size
-   PLAYER_HEIGHT       → Vertical collision size
-
-   --- QUALITY SYSTEM ---
-   QUALITY             → Current quality level ("low", "medium", "high")
-   qualityLocked       → Prevents frequent switching
-   avgFPS              → Averaged frame rate
-   fpsSamples          → Recent FPS history
-
-   --- MISSION SYSTEM ---
-   missionStops        → All mission trigger objects
-   activeMission       → Current interactable mission index
-   INTERACT_DISTANCE   → Distance required to interact
-   missionContentData  → Popup content mapping
-
-   --- MOBILE CONTROLS ---
-   joyVector           → Direction from joystick
-   joyActive           → Whether joystick is active
-   touchLook           → Whether touch-look camera is active
-
-   =========================================================
-   FILE STRUCTURE ORDER
-   =========================================================
-   1. Device Detection
-   2. Imports
-   3. Scene + Renderer Setup
-   4. Quality System
-   5. Camera Setup
-   6. Lighting
-   7. Shadow System (CSM)
-   8. Loader + Loading Screen
-   9. World Setup
-   10. Collision System
-   11. Character + Animation
-   12. Input Handling
-   13. Camera Logic
-   14. Player Movement Logic
-   15. Mission System
-   16. UI + Popup System
-   17. Gallery System
-   18. Minimap + Fullmap
-   19. Main Animation Loop
-   20. Resize Handling
-   21. Navbar UI System
-
-
-
-
-/* =========================================================
-AUTO DEVICE DETECTION + UI TOGGLE (ADDED)
-   
-(function () {
-  const body = document.body;
-
-  function detectDevice() {
-    const isTouch =
-      'ontouchstart' in window ||
-      navigator.maxTouchPoints > 0 ||
-      navigator.msMaxTouchPoints > 0;
-
-    const width = window.innerWidth;
-    let device = 'desktop';
-
-    if (isTouch && width < 768) device = 'mobile';
-    else if (isTouch && width < 1100) device = 'tablet';
-
-    body.dataset.device = device;
-    console.log('[DEVICE MODE]', device);
-
-    const hud = document.getElementById('hud');
-    const mobileControls = document.getElementById('mobile-controls');
-    const joystick = document.getElementById('joystick');
-    const minimap = document.querySelector('.minimap');
-
-    /* ===== TOGGLE UI ===== */
-    if (device === 'mobile') {
-      hud && (hud.style.display = 'none');
-      mobileControls && (mobileControls.style.display = 'flex');
-      joystick && (joystick.style.display = 'block');
-      minimap && (minimap.style.opacity = '0.85');
-
-    }
-
-    if (device === 'tablet') {
-      hud && (hud.style.opacity = '0');
-      mobileControls && (mobileControls.style.display = 'flex');
-      joystick && (joystick.style.display = 'block');
-      minimap && (minimap.style.opacity = '1');
-    }
-
-    if (device === 'desktop') {
-      hud && (hud.style.display = 'flex');
-      mobileControls && (mobileControls.style.display = 'none');
-      joystick && (joystick.style.display = 'none');
-      minimap && (minimap.style.opacity = '1');
-    }
-  }
-
-  detectDevice();
-  window.addEventListener('resize', detectDevice);
-})();
-
 
 /* =========================
    DYNAMIC QUALITY
@@ -245,38 +102,6 @@ setInterval(() => {
   if (avgFPS > 45 && avgFPS < 55) qualityLocked = true;
 }, 3000);
 
-
-
-
-/*imports*/
-
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { CSM } from 'three/addons/csm/CSM.js';
-
-
-/* =========================
-   SCENE SETUP
-========================= */
-const scene = new THREE.Scene();
-
-// RENDERER
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-document.body.appendChild(renderer.domElement);
-
-const textureloader = new THREE.TextureLoader();
-
-// MINIMAP RENDERER
-const minimapContainer = document.getElementById('minimap');
-const minimapRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-minimapRenderer.setSize(minimapContainer.clientWidth, minimapContainer.clientHeight);
-minimapRenderer.setPixelRatio(window.devicePixelRatio);
-minimapContainer.appendChild(minimapRenderer.domElement);
-
-
 /* =========================
    CAMERAS
 ========================= */
@@ -285,45 +110,6 @@ const minimapCamera = new THREE.OrthographicCamera(-20, 20, 20, -20, 0.1, 500);
 minimapCamera.position.set(0, 50, 0);
 minimapCamera.up.set(0, 0, -1);
 minimapCamera.lookAt(0, 0, 0);
-
-
-/* =========================
-   CAMERA LOGIC
-========================= */
-let yaw = Math.PI;
-let pitch = 0.55;
-let cameraDist = 2.8;
-const MIN_DIST = 2.0;
-const MAX_DIST = 8.0;
-const MIN_PITCH = -4.2;
-const MAX_PITCH = 1.2;
-
-const MOUSE_SENSITIVITY = 0.0022;
-const CAMERA_SMOOTHING = 5;
-
-let targetYaw = yaw;
-let targetPitch = pitch;
-
-renderer.domElement.addEventListener('click', (e) => {
-  if (e.target.closest('button')) return;
-    if (popupOverlay && popupOverlay.style.display !== 'flex') {
-        document.body.requestPointerLock();
-    }
-});
-
-document.addEventListener('mousemove', e => {
-    if (document.pointerLockElement === document.body) {
-        targetYaw -= e.movementX * MOUSE_SENSITIVITY;
-        targetPitch -= e.movementY * MOUSE_SENSITIVITY;
-        //targetPitch = THREE.MathUtils.clamp(targetPitch, MIN_PITCH, MAX_PITCH);
-        console.log("looking at ",targetPitch,camera.position.y);
-    }
-});
-
-document.addEventListener('wheel', e => {
-    cameraDist += e.deltaY * 0.007;
-    cameraDist = THREE.MathUtils.clamp(cameraDist, MIN_DIST, MAX_DIST);
-}, { passive: true });
 
 /* =========================
    LIGHTS
@@ -335,9 +121,9 @@ const dirLight = new THREE.DirectionalLight(0x00f0ff, 2.0);
 dirLight.position.set(50, 100, 50);
 scene.add(dirLight);
 
-//const backLight = new THREE.DirectionalLight(0x00f0ff, 0.8);
-//backLight.position.set(-50, 20, -50);
-//scene.add(backLight);
+const backLight = new THREE.DirectionalLight(0x00f0ff, 0.8);
+backLight.position.set(-50, 20, -50);
+scene.add(backLight);
 
 /* =========================
    CSM SHADOWS
@@ -412,28 +198,13 @@ function tryStartGame() {
 }
 
 /* =========================
-   WORLD
-const skyGeo = new THREE.SphereGeometry(4,60,40);
-const skyMat = new THREE.MeshBasicMaterial({
-  map: textureloader.load("public/models/nightsky1.jpg"), 
-  side: THREE.BackSide,
-  color: 0xffffff
-});
-const sky = new THREE.Mesh(skyGeo, skyMat);
-scene.add(sky);
-sky.position.set(0,-1,0);
-sky.scale.set(100,100,100);
-sky.rotation.set(Math.PI/3, Math.PI/2, Math.PI/3);
-
-
-/* =========================
-   World + COLLISION
+   COLLISION
 ========================= */
 const BLOCKED_NAMES = new Set(["Object_35", "Object_43", "Object_47", "Object_15", "Object_79"]);
 const blockedBoxes = [];
 
 loader.load('public/models/mainland.glb', gltf => {
-  
+  scene.add(gltf.scene);
   gltf.scene.position.set(0, 2.0, 0);
   gltf.scene.updateMatrixWorld(true);
   gltf.scene.traverse(o => {
@@ -445,14 +216,8 @@ loader.load('public/models/mainland.glb', gltf => {
         const box = new THREE.Box3().setFromObject(o);
         blockedBoxes.push({ box, name: o.name });
       }
-      if(o.name == "Сфера"){
-        o.position.set(0,10000,0);
-        console.log('big model  loaded');
-
-      }
     }
   });
-  scene.add(gltf.scene);
 });
 
 const playerBox = new THREE.Box3();
@@ -473,47 +238,6 @@ function clampCharacterPosition() {
   character.position.x = Math.max(MAP_BOUNDS.minX, Math.min(MAP_BOUNDS.maxX, character.position.x));
   character.position.z = Math.max(MAP_BOUNDS.minZ, Math.min(MAP_BOUNDS.maxZ, character.position.z));
 }
-const spheregeo = new THREE.SphereGeometry(360);
-const sphermat = new THREE.MeshStandardMaterial({
-  map: textureloader.load('public/models/stars.jpg'),
-  side:THREE.DoubleSide
-});
-const sphere = new THREE.Mesh(spheregeo,sphermat);
-scene.add(sphere);
-
-
-/* =========================
-   FULLMAP
-========================= */
-const closeMapBtn = document.getElementById('closeMapBtn');
-const fullmapContainer = document.getElementById('fullmap');
-let isFullMapOpen = false;
-if (minimapContainer && fullmapContainer && closeMapBtn) {
-    minimapContainer.addEventListener('click', () => {
-        isFullMapOpen = true;
-        document.exitPointerLock();
-        fullmapContainer.style.display = 'flex';
-        closeMapBtn.style.display = 'block';
-        fullmapContainer.appendChild(minimapRenderer.domElement);
-        minimapRenderer.setSize(window.innerWidth, window.innerHeight);
-        const zoom = 100;
-        minimapCamera.left = -zoom; minimapCamera.right = zoom;
-        minimapCamera.top = zoom; minimapCamera.bottom = -zoom;
-        minimapCamera.updateProjectionMatrix();
-    });
-    closeMapBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        isFullMapOpen = false;
-        fullmapContainer.style.display = 'none';
-        closeMapBtn.style.display = 'none';
-        minimapContainer.appendChild(minimapRenderer.domElement);
-        minimapRenderer.setSize(minimapContainer.clientWidth, minimapContainer.clientHeight);
-        minimapCamera.left = -20; minimapCamera.right = 20;
-        minimapCamera.top = 20; minimapCamera.bottom = -20;
-        minimapCamera.updateProjectionMatrix();
-    });
-}
-
 
 /* =========================
    CHARACTER
@@ -601,6 +325,9 @@ function updateKeyVisuals() {
     });
 }
 
+/* =========================
+   CAMERA
+========================= */
 let yaw = Math.PI;
 let pitch = 0.35;
 let cameraDist = 2.8;
@@ -680,48 +407,24 @@ window.addEventListener('touchmove', e => {
   const t = e.touches[0];
   targetYaw -= (t.clientX - lastTouch.x) * 0.006;
   targetPitch -= (t.clientY - lastTouch.y) * 0.004;
-  //targetPitch = THREE.MathUtils.clamp(targetPitch, -0.3, 1.3);
+  targetPitch = THREE.MathUtils.clamp(targetPitch, -0.3, 1.3);
   lastTouch.set(t.clientX, t.clientY);
 });
 window.addEventListener('touchend', () => { touchLook = false; });
-
-
-
-
-
 
 /* =========================
    UPDATE LOGIC
 ========================= */
 function updateCamera(delta) {
-
   yaw = THREE.MathUtils.lerp(yaw, targetYaw, CAMERA_SMOOTHING * delta);
   pitch = THREE.MathUtils.lerp(pitch, targetPitch, CAMERA_SMOOTHING * delta);
-
-  // 90° up/down clamp
-  pitch = THREE.MathUtils.clamp(
-    pitch,
-    -Math.PI / 10 + 0.001,
-    Math.PI / 2 - 0.001
-  );
-
-  // Proper spherical orbit calculation
-  const offset = new THREE.Vector3();
-
-  offset.x = cameraDist * Math.sin(yaw) * Math.cos(pitch);
-  offset.y = cameraDist * Math.sin(pitch);
-  offset.z = cameraDist * Math.cos(yaw) * Math.cos(pitch);
-
-  const targetCamPos = character.position.clone().add(offset);
-
+  const camOffset = new THREE.Vector3(Math.sin(yaw) * cameraDist, 1.4 , Math.cos(yaw) * cameraDist);camOffset.y += Math.sin(pitch) * 0.6;
+  const targetCamPos = character.position.clone().add(camOffset);
   camera.position.lerp(targetCamPos, 6 * delta);
-
   const lookTarget = character.position.clone();
   lookTarget.y += 1.7;
-
   camera.lookAt(lookTarget);
 }
-
 
 function updatePlayerMovement(delta) {
   const camForward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
@@ -1040,6 +743,9 @@ if (galleryNext) galleryNext.addEventListener("click", () => {
   renderGallery();
 });
 
+/* =========================
+   FULLMAP (FIXED: Break out to BODY)
+========================= */
 const closeMapBtn = document.getElementById('closeMapBtn');
 const fullmapContainer = document.getElementById('fullmap');
 let isFullMapOpen = false;
@@ -1076,34 +782,8 @@ if (minimapContainer && fullmapContainer && closeMapBtn) {
         minimapCamera.left = -20; minimapCamera.right = 20;
         minimapCamera.top = 20; minimapCamera.bottom = -20;
         minimapCamera.updateProjectionMatrix();
-
-/* ===== NAVBAR UI ===== */
-
-(function () {
-  const hamburger = document.getElementById("hamburger");
-  const navLinks = document.querySelector(".nav-links");
-
-  if (!hamburger || !navLinks) return;
-
-  window.addEventListener("scroll", () => {
-    document.body.classList.toggle("nav-scrolled", window.scrollY > 20);
-  });
-
-  hamburger.addEventListener("click", () => {
-    hamburger.classList.toggle("active");
-    navLinks.classList.toggle("active");
-  });
-
-  document.querySelectorAll(".nav-links button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      navLinks.classList.remove("active");
-      hamburger.classList.remove("active");
     });
-  });
-})();
-
-
-
+}
 
 /* =========================
    MAIN LOOP
@@ -1171,6 +851,9 @@ window.addEventListener('resize', () => {
 applyQualitySettings();
 
 
+/* =========================
+   NAVBAR & BUTTON EVENTS (Corrected for Stability)
+========================= */
 document.addEventListener("DOMContentLoaded", () => {
   const hamburger = document.getElementById("hamburger");
   const navLinks = document.querySelector(".nav-links");
@@ -1225,8 +908,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 /* =========================
    FORCE DEVICE DETECTION
+========================= */
 /* =========================
    STRICT DEVICE DETECTION
+========================= */
 function detectDevice() {
   const joystick = document.getElementById('joystick');
   const hud = document.getElementById('hud');
@@ -1257,4 +942,3 @@ function detectDevice() {
 // Run on load and resize
 detectDevice();
 window.addEventListener('resize', detectDevice);
-//button settings
