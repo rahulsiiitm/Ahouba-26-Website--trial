@@ -1052,7 +1052,7 @@ function getControlMode() {
 
   const isSmallScreen = window.innerWidth < 920;
 
-  return (hasTouch && isSmallScreen) ? "mobile" : "desktop";
+  return (hasTouch) ? "mobile" : "desktop";
 }
 let CONTROL_MODE = getControlMode();
 function applyControlMode() {
