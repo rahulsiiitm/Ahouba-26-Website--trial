@@ -6,7 +6,8 @@ import { CSM } from 'three/addons/csm/CSM.js';
    SCENE SETUP
 ========================= */
 const scene = new THREE.Scene();
-
+scene.background = new THREE.Color(0x000010);
+scene.fog = new THREE.FogExp2(0x000010, 0.0008);
 // RENDERER
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -238,13 +239,62 @@ function clampCharacterPosition() {
   character.position.x = Math.max(MAP_BOUNDS.minX, Math.min(MAP_BOUNDS.maxX, character.position.x));
   character.position.z = Math.max(MAP_BOUNDS.minZ, Math.min(MAP_BOUNDS.maxZ, character.position.z));
 }
-const texture = textureloader.load('public/models/stars.jpg');
+/*const texture = textureloader.load('public/models/stars.jpg');
 const geometry = new THREE.SphereGeometry(500, 60, 40);
 geometry.scale(-1, 1, 1); // Flip inside
 
 const material = new THREE.MeshBasicMaterial({ map: texture });
 const mesh = new THREE.Mesh(geometry, material);
-scene.add(mesh);
+scene.add(mesh);*/
+
+
+function createStarDome() {
+
+  const radius = 350;
+  const starCount = 500;
+
+  const positions = new Float32Array(starCount * 3);
+
+  for (let i = 0; i < starCount; i++) {
+
+    const i3 = i * 3;
+
+    // Random spherical coordinates
+    const theta = Math.random() * Math.PI * 2;       // around Y
+    const phi = Math.random() * (Math.PI / 2);       // ONLY top hemisphere
+
+    const x = radius * Math.sin(phi) * Math.cos(theta);
+    const y = radius * Math.cos(phi);  // Always positive (top)
+    const z = radius * Math.sin(phi) * Math.sin(theta);
+
+    positions[i3]     = x;
+    positions[i3 + 1] = y;
+    positions[i3 + 2] = z;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(positions, 3)
+  );
+
+  const material = new THREE.PointsMaterial({
+    color: 0xffffff,
+    size: 1.2,
+    sizeAttenuation: true,
+    depthWrite: false
+  });
+
+  const stars = new THREE.Points(geometry, material);
+  
+  scene.add(stars);
+
+  return stars;
+}
+
+
+let stars = createStarDome();
+
 
 /* =========================
    CHARACTER
@@ -861,7 +911,11 @@ function animate() {
       }
     }
   });
+  
+ 
+  
 
+  //csm
   if (csm) csm.update();
   renderer.render(scene, camera);
   minimapRenderer.render(scene, minimapCamera);
