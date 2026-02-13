@@ -80,7 +80,10 @@ hud.style.borderRadius = "6px";
 hud.style.border = "1px solid rgba(0,240,255,0.3)";
 hud.style.backdropFilter = "blur(5px)";
 // Uncomment to show FPS on screen
-//document.body.appendChild(hud);
+if(window.innerWidth>1024){
+  document.body.appendChild(hud);
+}
+
 
 setInterval(() => {
   hud.innerHTML = `FPS: ${avgFPS.toFixed(1)}<br>Quality: ${QUALITY}`;
@@ -144,7 +147,7 @@ function enableCSM() {
   csm.lights.forEach(l => {
     l.shadow.bias = -0.0005;
     l.shadow.normalBias = 0.02;
-    l.intensity = 1.5;
+    l.intensity = 0;
   });
 }
 function disableCSM() {
@@ -173,30 +176,28 @@ startInstructions.style.marginTop = '10px';
 if(loadingContainer) loadingContainer.appendChild(startInstructions);
 
 let assetsLoaded = false;
-let userReady = false;
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { userReady = true; tryStartGame(); }
-});
-// FIX: Prevent game start if clicking navbar
-document.addEventListener('click', (e) => { 
-    if(e.target.closest('button') || e.target.closest('.navbar')) return;
-    userReady = true; 
-    tryStartGame(); 
-});
-document.addEventListener('touchstart', (e) => { 
-    if(e.target.closest('button') || e.target.closest('.navbar')) return;
-    userReady = true; 
-    tryStartGame(); 
-});
 loadingManager.onLoad = () => { assetsLoaded = true; tryStartGame(); };
+/* =========================
+   INTRO CINEMATIC
+========================= */
+let introPlaying = true;
+let introTime = 0;
+const INTRO_DURATION = 2.0; // seconds
 
 function tryStartGame() {
-  if (assetsLoaded && userReady && loadingContainer.style.display !== 'none') {
+  if (assetsLoaded && loadingContainer.style.display !== 'none') {
     loadingContainer.style.display = 'none';
-    animate(); 
+
+    // Start intro
+    introPlaying = true;
+    introTime = 0;
+
+    animate();
   }
 }
+
+
 
 /* =========================
    COLLISION
@@ -251,7 +252,7 @@ scene.add(mesh);*/
 function createStarDome() {
 
   const radius = 350;
-  const starCount = 500;
+  const starCount = 550;
 
   const positions = new Float32Array(starCount * 3);
 
@@ -280,10 +281,13 @@ function createStarDome() {
 
   const material = new THREE.PointsMaterial({
     color: 0xffffff,
-    size: 1.2,
+    size: 1.5,
     sizeAttenuation: true,
     depthWrite: false
   });
+    const time = 2;
+    material.opacity = 0.8 + Math.sin(time * 5) * 0.2;
+
 
   const stars = new THREE.Points(geometry, material);
   
@@ -349,7 +353,7 @@ loader.load('public/models/finalmainmodel.glb', gltf => {
 ========================= */
 const GRAVITY = -35;
 const JUMP_FORCE = 12;
-const WALK_SPEED = 8;
+const WALK_SPEED = 10;
 const SPRINT_SPEED = 15;
 const ACCELERATION = 60; 
 const DECELERATION = 40; 
@@ -493,7 +497,7 @@ function updateCamera(delta) {
 
   const targetCamPos = character.position.clone().add(offset);
 
-  camera.position.lerp(targetCamPos, 6 * delta);
+  camera.position.lerp(targetCamPos, 3 * delta);
 
   const lookTarget = character.position.clone();
   lookTarget.y += 1.7;
@@ -774,7 +778,7 @@ const galleryTrack = document.getElementById("galleryTrack");
 const galleryPrev = document.getElementById("galleryPrev");
 const galleryNext = document.getElementById("galleryNext");
 const missionGalleryData = {
-  events: [ "public/models/1.jpg", "public/models/2.jpg", "public/models/3.jpg", "4.jpg" ],
+  events: [ "public/models/1.jpg", "public/models/2.jpg", "public/models/3.jpg" ],
   glimpses: [ "public/models/A3.jpg", "public/models/Logo_Cubeten2.png" ],
   sponsors: [],
   about: []
@@ -877,7 +881,51 @@ function animate() {
   measureFPS();
   updateKeyVisuals();
   const delta = Math.min(clock.getDelta(), 0.033);
-  
+
+
+  // INTRO CAMERA PAN
+  if (introPlaying) {
+  followCircle.visible = false;
+  glowRing.visible = false;
+
+  introTime += delta;
+
+  const progress = Math.min(introTime / INTRO_DURATION, 1);
+  const eased = 1 - Math.pow(1 - progress, 3);
+
+  // Dramatic starting position
+  const startPos = new THREE.Vector3(
+       42.25023105546198 ,
+        100,
+         238.4027888687572
+  );
+
+  // IMPORTANT: Use SAME logic as updateCamera()
+  const offset = new THREE.Vector3(
+    0,2,0
+  );
+
+  const endPos = character.position.clone().add(offset);
+
+  camera.position.lerpVectors(startPos, endPos, eased);
+  camera.lookAt(character.position.clone().setY(character.position.y + 1.7));
+
+  if (progress >= 1) {
+
+    // 🔥 SYNC camera state
+    yaw = targetYaw;
+    pitch = targetPitch;
+    followCircle.visible = true;
+    glowRing.visible = true;
+    introPlaying = false;
+  }
+
+  renderer.render(scene, camera);
+  minimapRenderer.render(scene, minimapCamera);
+  return;
+}
+
+
   if (mixer) mixer.update(delta);
   updatePlayerMovement(delta);
   updateCamera(delta);
@@ -912,7 +960,7 @@ function animate() {
     }
   });
   
- 
+  ////console.log(character.position.x,character.position.y,character.position.z);
   
 
   //csm
