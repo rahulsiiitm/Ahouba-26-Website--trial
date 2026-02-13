@@ -902,7 +902,7 @@ function animate() {
 
   // IMPORTANT: Use SAME logic as updateCamera()
   const offset = new THREE.Vector3(
-    0,2,0
+    0,2.5,0
   );
 
   const endPos = character.position.clone().add(offset);
@@ -1042,33 +1042,34 @@ document.addEventListener("DOMContentLoaded", () => {
 /* =========================
    STRICT DEVICE DETECTION
 ========================= */
-function detectDevice() {
+
+// Lock control mode once
+
+function getControlMode() {
+  const hasTouch =
+    navigator.maxTouchPoints > 0 ||
+    window.matchMedia("(pointer: coarse)").matches;
+
+  const isSmallScreen = window.innerWidth < 920;
+
+  return (hasTouch && isSmallScreen) ? "mobile" : "desktop";
+}
+let CONTROL_MODE = getControlMode();
+function applyControlMode() {
   const joystick = document.getElementById('joystick');
   const hud = document.getElementById('hud');
   const mobileControls = document.getElementById('mobile-controls');
 
-  // Check 1: Does the device primarily use a touch interface? (Finger)
-  const isTouchInterface = window.matchMedia("(pointer: coarse)").matches;
-
-  // Check 2: Is the screen actually mobile/tablet sized?
-  // (Prevents joystick on huge touch monitors or smart TVs)
-  const isSmallScreen = window.innerWidth < 1024;
-
-  if (isTouchInterface && isSmallScreen) {
-    // --- MOBILE/TABLET MODE ---
+  if (CONTROL_MODE === "mobile") {
     if (joystick) joystick.style.display = 'block';
     if (mobileControls) mobileControls.style.display = 'block';
     if (hud) hud.style.display = 'none';
   } else {
-    // --- DESKTOP/LAPTOP MODE ---
-    // Even if the window is resized to 500px, if the pointer is 'fine' (mouse),
-    // we keep the desktop UI.
     if (joystick) joystick.style.display = 'none';
     if (mobileControls) mobileControls.style.display = 'none';
     if (hud) hud.style.display = 'flex';
   }
 }
 
-// Run on load and resize
-detectDevice();
-window.addEventListener('resize', detectDevice);
+applyControlMode();
+
