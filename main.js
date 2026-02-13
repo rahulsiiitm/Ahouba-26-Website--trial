@@ -203,7 +203,7 @@ function tryStartGame() {
 const BLOCKED_NAMES = new Set(["Object_35", "Object_43", "Object_47", "Object_15", "Object_79"]);
 const blockedBoxes = [];
 
-loader.load('public/models/mainland.glb', gltf => {
+loader.load('public/models/remakedland.glb', gltf => {
   scene.add(gltf.scene);
   gltf.scene.position.set(0, 2.0, 0);
   gltf.scene.updateMatrixWorld(true);
@@ -238,6 +238,13 @@ function clampCharacterPosition() {
   character.position.x = Math.max(MAP_BOUNDS.minX, Math.min(MAP_BOUNDS.maxX, character.position.x));
   character.position.z = Math.max(MAP_BOUNDS.minZ, Math.min(MAP_BOUNDS.maxZ, character.position.z));
 }
+const texture = textureloader.load('public/models/stars.jpg');
+const geometry = new THREE.SphereGeometry(500, 60, 40);
+geometry.scale(-1, 1, 1); // Flip inside
+
+const material = new THREE.MeshBasicMaterial({ map: texture });
+const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
 
 /* =========================
    CHARACTER
@@ -416,15 +423,34 @@ window.addEventListener('touchend', () => { touchLook = false; });
    UPDATE LOGIC
 ========================= */
 function updateCamera(delta) {
+
   yaw = THREE.MathUtils.lerp(yaw, targetYaw, CAMERA_SMOOTHING * delta);
   pitch = THREE.MathUtils.lerp(pitch, targetPitch, CAMERA_SMOOTHING * delta);
-  const camOffset = new THREE.Vector3(Math.sin(yaw) * cameraDist, 1.4 , Math.cos(yaw) * cameraDist);camOffset.y += Math.sin(pitch) * 0.6;
-  const targetCamPos = character.position.clone().add(camOffset);
+
+  // 90° up/down clamp
+  pitch = THREE.MathUtils.clamp(
+    pitch,
+    -Math.PI / 10 + 0.001,
+    Math.PI / 2 - 0.001
+  );
+
+  // Proper spherical orbit calculation
+  const offset = new THREE.Vector3();
+
+  offset.x = cameraDist * Math.sin(yaw) * Math.cos(pitch);
+  offset.y = cameraDist * Math.sin(pitch);
+  offset.z = cameraDist * Math.cos(yaw) * Math.cos(pitch);
+
+  const targetCamPos = character.position.clone().add(offset);
+
   camera.position.lerp(targetCamPos, 6 * delta);
+
   const lookTarget = character.position.clone();
   lookTarget.y += 1.7;
+
   camera.lookAt(lookTarget);
 }
+
 
 function updatePlayerMovement(delta) {
   const camForward = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
