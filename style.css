@@ -712,7 +712,7 @@ b {
 
 /* 1. TOUCH DEVICES (Strict Logic)
    Only show joystick if the pointer is COARSE (finger) AND screen is < 1024px */
-@media (pointer: coarse){
+@media (pointer: coarse) and (max-width: 4000px) {
   #hud {
     display: none !important; /* Hide WASD on touch */
   }

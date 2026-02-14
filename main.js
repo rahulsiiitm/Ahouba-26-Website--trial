@@ -1068,31 +1068,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Lock control mode once
 
-function getControlMode() {
-  const hasTouch =
-    navigator.maxTouchPoints > 0 ||
-    window.matchMedia("(pointer: coarse)").matches;
+// function getControlMode() {
+//   const hasTouch =
+//     navigator.maxTouchPoints > 0 ||
+//     window.matchMedia("(pointer: coarse)").matches;
 
-  const isSmallScreen = window.innerWidth < 920;
+//   const isSmallScreen = window.innerWidth < 920;
 
-  return (hasTouch) ? "mobile" : "desktop";
-}
-let CONTROL_MODE = getControlMode();
-function applyControlMode() {
-  const joystick = document.getElementById('joystick');
-  const hud = document.getElementById('hud');
-  const mobileControls = document.getElementById('mobile-controls');
+//   return (hasTouch) ? "mobile" : "desktop";
+// }
+// let CONTROL_MODE = getControlMode();
+// function applyControlMode() {
+//   const joystick = document.getElementById('joystick');
+//   const hud = document.getElementById('hud');
+//   const mobileControls = document.getElementById('mobile-controls');
 
-  if (CONTROL_MODE === "mobile") {
-    if (joystick) joystick.style.display = 'block';
-    if (mobileControls) mobileControls.style.display = 'block';
-    if (hud) hud.style.display = 'none';
-  } else {
-    if (joystick) joystick.style.display = 'none';
-    if (mobileControls) mobileControls.style.display = 'none';
-    if (hud) hud.style.display = 'flex';
-  }
-}
+//   if (CONTROL_MODE === "mobile") {
+//     if (joystick) joystick.style.display = 'block';
+//     if (mobileControls) mobileControls.style.display = 'block';
+//     if (hud) hud.style.display = 'none';
+//   } else {
+//     if (joystick) joystick.style.display = 'none';
+//     if (mobileControls) mobileControls.style.display = 'none';
+//     if (hud) hud.style.display = 'flex';
+//   }
+// }
 
-applyControlMode();
+// applyControlMode();
 
