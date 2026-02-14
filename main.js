@@ -38,12 +38,12 @@ function applyQualitySettings() {
     disableCSM();
   }
   if (QUALITY === "medium") {
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
     renderer.shadowMap.enabled = false;
     disableCSM();
   }
   if (QUALITY === "high") {
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.shadowMap.enabled = true;
     enableCSM();
   }
@@ -73,7 +73,7 @@ hud.style.left = "10px";
 hud.style.padding = "8px 12px";
 hud.style.background = "rgba(0,0,0,0.7)";
 hud.style.color = "#00f0ff";
-hud.style.font = "13px monospace";
+hud.style.font = "13px aerial";
 hud.style.zIndex = "9999";
 hud.style.pointerEvents = "none";
 hud.style.borderRadius = "6px";
@@ -811,8 +811,31 @@ function renderGallery() {
     const div = document.createElement("div");
     div.className = `gallery-item ${item.type}`;
     const img = document.createElement("img");
-    img.src = item.src;
-    div.appendChild(img);
+
+// Base fallback
+img.src = item.src;
+
+// Auto-generate responsive versions
+// Example naming:
+// 1-800.webp
+// 1-1200.webp
+// 1-1600.webp
+
+const basePath = item.src.replace(/\.(jpg|jpeg|png|webp)$/i, "");
+
+img.srcset = `
+  ${basePath}-800.webp 800w,
+  ${basePath}-1200.webp 1200w,
+  ${basePath}-1600.webp 1600w
+`;
+
+img.sizes = "(max-width: 768px) 90vw, 65vw";
+
+img.loading = "lazy"; // Important for performance
+img.decoding = "async";
+
+div.appendChild(img);
+
     galleryTrack.appendChild(div);
   });
 }
