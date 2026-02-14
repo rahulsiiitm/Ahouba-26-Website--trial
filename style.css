@@ -11,7 +11,7 @@ body, html {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  height: 100%;
+  
   width: 100%;
   font-family: 'Rajdhani', sans-serif;
   /* Dark Blue Gradient Background */
@@ -712,7 +712,7 @@ b {
 
 /* 1. TOUCH DEVICES (Strict Logic)
    Only show joystick if the pointer is COARSE (finger) AND screen is < 1024px */
-@media (pointer: coarse) and (max-width: 1024px) {
+@media (pointer: coarse){
   #hud {
     display: none !important; /* Hide WASD on touch */
   }
