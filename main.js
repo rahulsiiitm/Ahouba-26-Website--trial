@@ -97,7 +97,7 @@ setInterval(() => {
     applyQualitySettings();
     return;
   }
-  if (avgFPS > 55) {
+  if (avgFPS > 50) {
     if (QUALITY === "low") QUALITY = "medium";
     else if (QUALITY === "medium") QUALITY = "high";
     applyQualitySettings();
@@ -118,7 +118,7 @@ minimapCamera.lookAt(0, 0, 0);
 /* =========================
    LIGHTS
 ========================= */
-const hemiLight = new THREE.HemisphereLight(0x00f0ff, 0xff2fd5, 1.2); 
+const hemiLight = new THREE.HemisphereLight(0xFFFFFF, 0xff2fd5, 1.8); 
 scene.add(hemiLight);
 
 const dirLight = new THREE.DirectionalLight(0x00f0ff, 2.0);
@@ -1059,9 +1059,7 @@ document.addEventListener("DOMContentLoaded", () => {
       navLinks.classList.remove("active");
   }
 });
-/* =========================
-   FORCE DEVICE DETECTION
-========================= */
+
 /* =========================
    STRICT DEVICE DETECTION
 ========================= */
