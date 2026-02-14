@@ -779,7 +779,7 @@ const galleryPrev = document.getElementById("galleryPrev");
 const galleryNext = document.getElementById("galleryNext");
 const missionGalleryData = {
   events: [ "public/models/1.jpg", "public/models/2.jpg", "public/models/3.jpg" ],
-  glimpses: [ "public/models/A3.jpg", "public/models/Logo_Cubeten2.png" ],
+  glimpses: ["public/models/glimpses/1.webp", "public/models/glimpses/2.webp", "public/models/glimpses/3.webp", "public/models/glimpses/4.webp", "public/models/glimpses/5.webp", "public/models/glimpses/6.webp", "public/models/glimpses/7.webp", "public/models/glimpses/8.webp", "public/models/glimpses/9.webp", "public/models/glimpses/10.webp", "public/models/glimpses/11.webp", "public/models/glimpses/12.webp"],
   sponsors: [],
   about: []
 };
