@@ -815,21 +815,21 @@ function renderGallery() {
 // Base fallback
 img.src = item.src;
 
-// Auto-generate responsive versions
-// Example naming:
-// 1-800.webp
-// 1-1200.webp
-// 1-1600.webp
+// // Auto-generate responsive versions
+// // Example naming:
+// // 1-800.webp
+// // 1-1200.webp
+// // 1-1600.webp
 
-const basePath = item.src.replace(/\.(jpg|jpeg|png|webp)$/i, "");
+// const basePath = item.src.replace(/\.(jpg|jpeg|png|webp)$/i, "");
 
-img.srcset = `
-  ${basePath}-800.webp 800w,
-  ${basePath}-1200.webp 1200w,
-  ${basePath}-1600.webp 1600w
-`;
+// img.srcset = `
+//   ${basePath}-800.webp 800w,
+//   ${basePath}-1200.webp 1200w,
+//   ${basePath}-1600.webp 1600w
+// `;
 
-img.sizes = "(max-width: 768px) 90vw, 65vw";
+// img.sizes = "(max-width: 768px) 90vw, 65vw";
 
 img.loading = "lazy"; // Important for performance
 img.decoding = "async";

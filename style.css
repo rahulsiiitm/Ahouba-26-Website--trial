@@ -380,6 +380,7 @@ label {
    INTERACTION PROMPT
 ========================= */
 #interactPrompt {
+  
   position: fixed;
   bottom: 18%;
   left: 50%;
@@ -402,6 +403,12 @@ label {
   box-shadow: 
     0 0 25px rgba(0, 229, 255, 0.4),
     0 8px 20px rgba(0,0,0,0.3);
+}
+@media (pointer: coarse) {
+  #interactPrompt{
+    width:150px !important;
+  
+  }
 }
 
 @keyframes floatUp {
@@ -530,7 +537,7 @@ b {
 .gallery-item.small {
   z-index: 5;
   transform: translateX(70%) scale(0.75) rotateY(-15deg);
-  opacity: 0.5;
+  opacity: 0.179;
   width: 45%;
   height: 65%;
   filter: grayscale(80%) brightness(0.7);
@@ -559,6 +566,7 @@ b {
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0.5;
 }
 
 .gallery-btn:hover { 
@@ -596,7 +604,21 @@ b {
     0 0 25px var(--primary),
     0 8px 20px rgba(41, 121, 255, 0.3);
 }
-
+@media (pointer: coarse){
+  .gallery-item.small{
+    opacity: 0;
+  }
+  .gallery-item.hero{
+    width: 95%;
+    height: 95%;
+  }
+  .gallery-btn.left{
+    left: 10px;
+  }
+  .gallery-btn.right{
+    right:10px;
+  }
+}
 /* =========================
    MOBILE CONTROLS (Joystick)
 ========================= */
