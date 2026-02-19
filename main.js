@@ -462,11 +462,13 @@ let lastTouch = new THREE.Vector2();
 
 window.addEventListener('touchstart', e => {
   // FIX: Don't look around if touching UI
+  if(isUIOpen) return;
   if (e.target.closest('#joystick') || e.target.closest('.navbar')) return;
   touchLook = true;
   lastTouch.set(e.touches[0].clientX, e.touches[0].clientY);
 });
 window.addEventListener('touchmove', e => {
+  if(isUIOpen) return;
   if (!touchLook) return;
   const t = e.touches[0];
   targetYaw -= (t.clientX - lastTouch.x) * 0.006;
@@ -759,8 +761,10 @@ function checkMissionProximity() {
 
 function openMissionPopup() {
   if (activeMission === null) return;
-  isUIOpen = true;
+  isUIOpen = true; //window scroll lock krne ke liye 
+  touchLook = false; //touch-scroll lock krneke liye
   document.exitPointerLock();
+  document.body.classList.add("no-scroll"); 
   const missionKey = missionStops[activeMission].key;
   if (popupTitle) popupTitle.textContent = missionKey.toUpperCase();
   if (popupContent && missionContentData[missionKey]){ popupContent.style.display = "block" ; popupContent.innerHTML = missionContentData[missionKey];}
@@ -771,6 +775,7 @@ function openMissionPopup() {
 function closeMissionPopup() {
   if (popupOverlay) popupOverlay.style.display = "none";
   isUIOpen = false;
+   document.body.classList.remove("no-scroll"); 
 }
 window.addEventListener("keydown", e => {
   if (e.key.toLowerCase() === "e" && activeMission !== null) openMissionPopup();
