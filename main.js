@@ -168,7 +168,7 @@ const loadingManager = new THREE.LoadingManager(
 const loader = new GLTFLoader(loadingManager);
 
 const startInstructions = document.createElement('p');
-startInstructions.innerHTML = `Use W/A/S/D to move<br>Hold SHIFT to Sprint<br>Click to Look Around<br>Press ENTER to start`;
+startInstructions.innerHTML = `Use W/A/S/D or JoyStick to move<br>Hold SHIFT to Sprint<br>Click to Look Around<br>`;
 startInstructions.style.color = 'var(--secondary, #00f0ff)';
 startInstructions.style.textAlign = 'center';
 startInstructions.style.fontFamily = 'inherit';
@@ -401,6 +401,7 @@ let targetYaw = yaw;
 let targetPitch = pitch;
 
 renderer.domElement.addEventListener('click', (e) => {
+  if(isUIOpen) return;
   // FIX: Don't lock pointer if clicking UI
   if (e.target.closest('button') || e.target.closest('.navbar')) return;
     if (popupOverlay && popupOverlay.style.display !== 'flex') {
@@ -409,6 +410,7 @@ renderer.domElement.addEventListener('click', (e) => {
 });
 
 document.addEventListener('mousemove', e => {
+    if (isUIOpen) return;
     if (document.pointerLockElement === document.body) {
         targetYaw -= e.movementX * MOUSE_SENSITIVITY;
         targetPitch -= e.movementY * MOUSE_SENSITIVITY;
@@ -417,6 +419,7 @@ document.addEventListener('mousemove', e => {
 });
 
 document.addEventListener('wheel', e => {
+    if(isUIOpen) return;
     cameraDist += e.deltaY * 0.007;
     cameraDist = THREE.MathUtils.clamp(cameraDist, MIN_DIST, MAX_DIST);
 }, { passive: true });
@@ -687,25 +690,34 @@ function createMissionStop(x, y, z, missionKey) {
   });
 }
 
-createMissionStop(0, 0, 130, "events");
-createMissionStop(-10, 0, 140, "sponsors");
-createMissionStop(-18, 0, 130, "glimpses");
-createMissionStop(-10, 0, 120, "about");
+createMissionStop(16, 0, 49, "events");
+createMissionStop(-28, 0, 49, "sponsors");
+createMissionStop(-35,0,110, "glimpses");
+createMissionStop(60,0,120, "about");
 
 function changeCharacterPosition(btnId) {
   character.rotation.y = Math.PI;
   if (btnId === "eventBtn") {
-    character.position.set(0, 0, 130);
+    character.position.set(16,0,49);
+    activeMission = 0;
+    openMissionPopup();
+    
     
   } 
   else if (btnId === "sponsorBtn") {
-    character.position.set(-10, 0, 140);
+    character.position.set(-28,0,49);
+    activeMission = 1;
+    openMissionPopup();
   } 
   else if (btnId === "glimpseBtn") {
-    character.position.set(-18, 0, 130);
+    character.position.set(-35,0,110);
+    activeMission = 2;
+    openMissionPopup();
   } 
   else if (btnId === "aboutBtn") {
-    character.position.set(-10, 0, 120);
+    character.position.set(60,0,120);
+    activeMission = 3;
+    openMissionPopup();
   }
 }
 
@@ -717,7 +729,7 @@ const popupOverlay = document.getElementById("missionPopupOverlay");
 const popupTitle = document.getElementById("missionTitle");
 const popupContent = document.getElementById("missionContent");
 const closePopupBtn = document.getElementById("closePopup");
-
+let isUIOpen = false;
 const INTERACT_DISTANCE = 4.0;
 let activeMission = null;
 
@@ -749,6 +761,7 @@ function checkMissionProximity() {
 
 function openMissionPopup() {
   if (activeMission === null) return;
+  isUIOpen = true;
   document.exitPointerLock();
   const missionKey = missionStops[activeMission].key;
   if (popupTitle) popupTitle.textContent = missionKey.toUpperCase();
@@ -758,6 +771,7 @@ function openMissionPopup() {
 }
 function closeMissionPopup() {
   if (popupOverlay) popupOverlay.style.display = "none";
+  isUIOpen = false;
 }
 window.addEventListener("keydown", e => {
   if (e.key.toLowerCase() === "e" && activeMission !== null) openMissionPopup();
@@ -1041,8 +1055,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle Menu Buttons (Teleport)
   navButtons.forEach(btn => {
     btn.addEventListener("click", (e) => {
+      activeMission 
       e.stopPropagation(); // Prevent immediate closing if logic conflicts
       changeCharacterPosition(btn.id); 
+      
       closeMenu();
       document.exitPointerLock(); // Unlock cursor so user sees they clicked
     });
