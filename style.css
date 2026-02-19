@@ -44,6 +44,9 @@ canvas {
 :root {
   --navbar-height: 20px;
 }
+:root {
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
 
 /* =========================
    HUD (WASD & INFO)
@@ -467,6 +470,16 @@ b {
   from { transform: scale(0.9); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+@media (max-width: 768px) {
+  #missionPopup {
+    max-height: calc(100dvh - var(--navbar-height) - var(--safe-bottom));
+  }
+
+  #missionContent {
+    padding-bottom: calc(30px + var(--safe-bottom));
+  }
+}
+
 
 #missionTitle {
   margin: 0;
@@ -616,7 +629,7 @@ b {
   margin: 20px auto;  
   
   
-  padding-bottom:30px ;
+  
 
   border-radius: 14px;
 
@@ -631,6 +644,9 @@ b {
   overflow-x: hidden;
 
   box-sizing: border-box;
+}
+.event-list {
+  padding-bottom: calc(30px + var(--safe-bottom));
 }
 
 /* =========================
@@ -758,6 +774,10 @@ b {
   transition: all 0.3s;
   
 }
+#closePopup {
+  margin-bottom: calc(25px + var(--safe-bottom)) !important;
+}
+
 
 #closePopup:hover {
   background: var(--primary);
@@ -766,6 +786,7 @@ b {
     0 0 25px var(--primary),
     0 8px 20px rgba(41, 121, 255, 0.3);
 }
+
 @media (pointer: coarse){
   .gallery-item.small{
     opacity: 0;
