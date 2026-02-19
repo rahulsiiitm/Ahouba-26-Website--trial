@@ -700,9 +700,9 @@ b {
 
   .event-list .ul{
     margin-left: 10px;
-    height: auto ;
-    width: auto;
-    height: 50vh;
+    
+    
+    
     list-style: none;
     padding: 0;
     flex-direction: column;
@@ -710,15 +710,18 @@ b {
  
   }
   .event-list ul li{
-    margin-left: 0px;
-    
-    
+    margin-left: 10px;
+    margin-right: 10px;
+    height: 38vh;
+    width: 72vw;
     display: block;
     margin-bottom: 15px;
+
     margin-top: 5px;
     
   }
 }
+
 #closePopup {
   margin: 20px 30px 25px auto;
   padding: 12px 40px;
