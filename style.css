@@ -584,17 +584,17 @@ b {
 .gallery-btn.right { right: 20px; }
 /* =========================
    EVENT LIST CONTAINER
-========================= 
+========================= */
 .event-list {
-  display: flex;  controlled by JS 
+  display: flex;  
   position: absolute;
-  flex-direction: row;
+  /* flex-direction: row; */
   width: 85%;
   max-width: 700px;
 
-  max-height: 90%;   /* keeps it inside popup 
-  margin: 20px auto;  /* center + spacing from borders 
-
+  max-height: 90%;    
+  margin: 20px auto;  
+  
   
   padding-bottom:30px ;
 
@@ -607,7 +607,7 @@ b {
   box-shadow:
     0 0 15px rgba(0, 240, 255, 0.25);
 
-  overflow-y: auto;   /* ✅ scroll works inside 
+  overflow-y: auto;   
   overflow-x: hidden;
 
   box-sizing: border-box;
@@ -616,24 +616,28 @@ b {
 /* =========================
    LIST RESET
 ========================= */
-/* .event-list ul {
+.event-list ul {
   list-style: none;
   padding: 0;
   margin: 10px;
   margin-bottom:5px;
+  margin-left: 15px;
 
 
-} */
+}
 
 /* =========================
    LIST ITEMS
 ========================= */
-/* .event-list li {
+.event-list li {
   padding: 14px 18px;
-  margin-bottom: 14px;
-  width:200px;
-  height: 200px;
+  margin-bottom: 20px;
+  margin-top:20px ;
+  width: 320px;
+  height: 350px;
   border-radius: 10px;
+  
+
 
   background: linear-gradient(
     90deg,
@@ -649,10 +653,10 @@ b {
 
   transition: all 0.25s ease;
   cursor: pointer;
-} */
+}
 
 /* Hover */
-/* .event-list li:hover {
+.event-list li:hover {
   transform: translateY(-3px);
   box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
   background: linear-gradient(
@@ -660,12 +664,12 @@ b {
     rgba(0, 120, 255, 0.9),
     rgba(0, 240, 255, 0.7)
   );
-} */
+}
 
 /* =========================
    CLEAN SCROLLBAR
 ========================= */
-/* .event-list::-webkit-scrollbar {
+.event-list::-webkit-scrollbar {
   width: 6px;
 }
 
@@ -681,18 +685,40 @@ b {
   content: "";
   display: block;
   height: 20px;
-} */
-/* @media (pointer:coarse){
+} 
+@media (pointer:coarse){
   .event-list{
     flex-direction: column;
+    margin: 25px;
+    width: 95%;
+    height: 95%;
+    gap: 20px;
+    justify-content: space-around;
+    align-items: center;
     
   }
-  .event-list ul li{
-    margin-left: 20px;
-    height:250px;
-    width: 250px;
+
+  .event-list .ul{
+    margin-left: 10px;
+    height: auto ;
+    width: 95% ;
+    height: 95%;
+    list-style: none;
+    padding: 0;
+    flex-direction: column;
+    
+ 
   }
-} */
+  .event-list ul li{
+    margin-left: 0px;
+    
+    
+    display: block;
+    margin-bottom: 15px;
+    margin-top: 5px;
+    
+  }
+}
 #closePopup {
   margin: 20px 30px 25px auto;
   padding: 12px 40px;

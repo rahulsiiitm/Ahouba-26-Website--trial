@@ -796,30 +796,49 @@ const galleryTrack = document.getElementById("galleryTrack");
 const galleryPrev = document.getElementById("galleryPrev");
 const galleryNext = document.getElementById("galleryNext");
 const missionGalleryData = {
-  events: [ "public/models/1.jpg", "public/models/2.jpg", "public/models/3.jpg" ],
+  
   glimpses: ["public/models/glimpses/1.webp", "public/models/glimpses/2.webp", "public/models/glimpses/3.webp", "public/models/glimpses/4.webp", "public/models/glimpses/5.webp", "public/models/glimpses/6.webp", "public/models/glimpses/7.webp", "public/models/glimpses/8.webp", "public/models/glimpses/9.webp", "public/models/glimpses/10.webp", "public/models/glimpses/11.webp", "public/models/glimpses/12.webp"],
-  sponsors: [],
+  sponsors: ["public/models/sponsors/logo1.png"],
   about: []
 };
 let galleryIndex = 0;
 let activeGallery = [];
+
 function setupGallery(missionKey) {
-  if(missionKey !== "events"){
+  
+  
     if (missionGalleryData[missionKey] && missionGalleryData[missionKey].length > 0) {
-        if (galleryBox ) galleryBox.style.display = "block";console.log(popupTitle)
+        if (galleryBox ) galleryBox.style.display = "block"; if (bleft) bleft.style.display = "block"; if (bright) bright.style.display = "block";  if(elist) elist.style.display ="none";if(galleryTrack) galleryTrack.style.display ="flex";
+        
         activeGallery = missionGalleryData[missionKey];
         galleryIndex = 0;
         renderGallery();
-    } else {
-        if (galleryBox) galleryBox.style.display = "none";
-    }
-}
-else{
-    bleft.style.display = "none";
-    bright.style.display = "none";
-    elist.style.display = "flex";
+        
+    } 
+
+    else{
+        if(missionKey ==="about"){
+          
+          if (galleryBox ) galleryBox.style.display = "none";
+          if(galleryTrack) galleryTrack.style.display ="none";
+          if(elist) elist.style.display = "noen";
+          if(bright) bright.style.display = "none";
+          if(bleft) bleft.style.display = "none";
+        }
+        else{
+        if (galleryBox ) galleryBox.style.display = "flex";
+        if(galleryTrack) galleryTrack.style.display ="none";
+        if(elist) elist.style.display = "flex";
+        if(bright) bright.style.display = "none";
+        if(bleft) bleft.style.display = "none";
+        }
    
-}}
+}
+
+  
+}
+
+
 function renderGallery() {
   if (!galleryTrack) return;
   galleryTrack.innerHTML = "";
@@ -1055,7 +1074,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle Menu Buttons (Teleport)
   navButtons.forEach(btn => {
     btn.addEventListener("click", (e) => {
-      activeMission 
+      activeMission = true;
       e.stopPropagation(); // Prevent immediate closing if logic conflicts
       changeCharacterPosition(btn.id); 
       
