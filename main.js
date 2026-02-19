@@ -734,9 +734,7 @@ const INTERACT_DISTANCE = 4.0;
 let activeMission = null;
 
 const missionContentData = {
-  events: "Welcome to Ahouba Events!<br>Check out our latest tournaments below.",
-  glimpses: "Relive memories from past Ahouba editions.",
-  sponsors: "Our proud sponsors:<br>CubeTen Technologies<br>Times of Manipur",
+  
   about: "Ahouba is a cultural-tech fest celebrating creativity and innovation.",
 };
 
@@ -765,7 +763,8 @@ function openMissionPopup() {
   document.exitPointerLock();
   const missionKey = missionStops[activeMission].key;
   if (popupTitle) popupTitle.textContent = missionKey.toUpperCase();
-  if (popupContent) popupContent.innerHTML = missionContentData[missionKey] || "No content found.";
+  if (popupContent && missionContentData[missionKey]){ popupContent.style.display = "block" ; popupContent.innerHTML = missionContentData[missionKey];}
+  else{popupContent.style.display = "none";}
   if (popupOverlay) popupOverlay.style.display = "flex";
   setupGallery(missionKey);
 }
