@@ -41,6 +41,9 @@ canvas {
   --glow-primary: 0 0 20px rgba(41, 121, 255, 0.6);
   --glow-cyan: 0 0 20px rgba(0, 229, 255, 0.6);
 }
+:root {
+  --navbar-height: 55px;
+}
 
 /* =========================
    HUD (WASD & INFO)
@@ -486,6 +489,20 @@ b {
   overflow-y: auto;
   flex: 1;
 }
+/* =========================
+   MOBILE POPUP ALIGNMENT FIX
+========================= */
+@media (max-width: 768px) {
+  #missionPopupOverlay {
+    top: var(--navbar-height);
+    height: calc(100vh - var(--navbar-height));
+    padding-top: 10px;
+  }
+
+  #missionPopup {
+    max-height: calc(100vh - var(--navbar-height) - 20px);
+  }
+}
 
 /* =========================
    GALLERY (CAROUSEL)
@@ -726,7 +743,7 @@ b {
 }
 
 #closePopup {
-  margin: 20px 30px 25px auto;
+  margin: 0px 30px 25px auto;
   padding: 12px 40px;
   background: transparent;
   border: 2px solid var(--primary);
@@ -739,6 +756,7 @@ b {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s;
+  
 }
 
 #closePopup:hover {
@@ -822,6 +840,7 @@ b {
     top: 15px;
     width: 90%;
     padding: 0 16px;
+    z-index: 10001;
   }
 
   .hamburger {
@@ -916,6 +935,10 @@ b {
   }
 }
 
+.no-scroll {
+  overflow: hidden;
+  touch-action: none;
+}
 
 
 
