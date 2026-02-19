@@ -690,8 +690,8 @@ b {
   .event-list{
     flex-direction: column;
     margin: 25px;
-    width: 95%;
-    height: 95%;
+    width: 80vw;
+    height: 95vh;
     gap: 20px;
     justify-content: space-around;
     align-items: center;
