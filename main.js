@@ -773,6 +773,10 @@ if (popupOverlay) popupOverlay.addEventListener("click", e => {
 /* =========================
    GALLERY
 ========================= */
+const elist = document.getElementById("templist");
+
+const bleft = document.getElementById("galleryPrev");
+const bright = document.getElementById("galleryNext");
 const galleryBox = document.getElementById("missionGallery");
 const galleryTrack = document.getElementById("galleryTrack");
 const galleryPrev = document.getElementById("galleryPrev");
@@ -786,8 +790,9 @@ const missionGalleryData = {
 let galleryIndex = 0;
 let activeGallery = [];
 function setupGallery(missionKey) {
+  if(missionKey !== "events"){
     if (missionGalleryData[missionKey] && missionGalleryData[missionKey].length > 0) {
-        if (galleryBox) galleryBox.style.display = "block";
+        if (galleryBox ) galleryBox.style.display = "block";console.log(popupTitle)
         activeGallery = missionGalleryData[missionKey];
         galleryIndex = 0;
         renderGallery();
@@ -795,6 +800,12 @@ function setupGallery(missionKey) {
         if (galleryBox) galleryBox.style.display = "none";
     }
 }
+else{
+    bleft.style.display = "none";
+    bright.style.display = "none";
+    elist.style.display = "flex";
+   
+}}
 function renderGallery() {
   if (!galleryTrack) return;
   galleryTrack.innerHTML = "";
