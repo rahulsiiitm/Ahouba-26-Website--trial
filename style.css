@@ -435,8 +435,9 @@ b {
   padding: 20px;
   cursor: auto;
   pointer-events: all;
-  top:16vh;
-  height: 75vh;
+  
+
+  
 }
 
 #missionPopup {
