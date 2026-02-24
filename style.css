@@ -729,7 +729,7 @@ b {
 } 
 @media (pointer:coarse){
   .event-list{
-    flex-direction: column;
+    
     margin: 25px;
     width: 80vw;
     height: 95vh;
@@ -739,7 +739,7 @@ b {
     
   }
 
-  .event-list .ul{
+  .event-list .ul1{
     margin-left: 10px;
     display: flex !important;
     flex-direction: column;
