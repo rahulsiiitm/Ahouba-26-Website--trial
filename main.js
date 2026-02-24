@@ -737,7 +737,7 @@ let activeMission = null;
 
 const missionContentData = {
   
-  about: "Ahouba is a cultural-tech fest celebrating creativity and innovation.",
+  about: "Ahouba is the annual technical fest of IIIT Manipur, organized by its students. The fest features technical competitions such as coding contests, quizzes, and problem-solving challenges, along with workshops and talks. Students from various colleges participate in both team and individual events. Designed for different skill levels, Ahouba promotes practical, hands-on learning while encouraging engagement.",
 };
 
 function checkMissionProximity() {
