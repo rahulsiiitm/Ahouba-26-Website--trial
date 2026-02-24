@@ -802,7 +802,7 @@ const galleryNext = document.getElementById("galleryNext");
 const missionGalleryData = {
   
   glimpses: ["public/models/glimpses/1.webp", "public/models/glimpses/2.webp", "public/models/glimpses/3.webp", "public/models/glimpses/4.webp", "public/models/glimpses/5.webp", "public/models/glimpses/6.webp", "public/models/glimpses/7.webp", "public/models/glimpses/8.webp", "public/models/glimpses/9.webp", "public/models/glimpses/10.webp", "public/models/glimpses/11.webp", "public/models/glimpses/12.webp"],
-  sponsors: ["public/models/sponsors/logo1.png"],
+  sponsors: ["public/models/sponsors/sph.jpeg"],
   about: []
 };
 let galleryIndex = 0;
